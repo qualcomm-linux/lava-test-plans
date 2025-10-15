@@ -6,13 +6,13 @@ import shlex
 
 def test_validate_variables_happy_flow():
     sys.argv = shlex.split(
-        f'lava_test_plans --variables "test/variables-valid.ini" --device-type "x15" --testplan-device-path "projects/lkft/devices" --validate-variables --overwrite-variables "KERNEL_BRANCH=master"'
+        f'lava_test_plans --variables "test/variables-valid.ini" --device-type "x86" --validate-variables --overwrite-variables "KERNEL_BRANCH=master"'
     )
     assert main() == 0
 
 
 def test_validate_variables_failure():
     sys.argv = shlex.split(
-        f'lava_test_plans --variables "test/variables-invalid.yaml" --device-type "x15" --testplan-device-path "projects/lkft/devices" --validate-variables'
+        f'lava_test_plans --variables "test/variables-invalid.yaml" --device-type "x86" --validate-variables'
     )
     assert main() == 1

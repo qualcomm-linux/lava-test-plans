@@ -1,4 +1,0 @@
-{% extends "testcases/templates/android-benchmarks.yaml.jinja2" %}
-
-{% set test_timeout = 60 %}
-{% set benchmark_name = "glbenchmark25" %}
