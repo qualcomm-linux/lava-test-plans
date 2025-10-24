@@ -1,6 +1,6 @@
         steps:
         - export IMAGE_PATH=$PWD
-{% if apply_overlay == "rootfs" %} 
+{% if apply_overlay is defined and apply_overlay == "rootfs" %} 
         - cp overlay*.tar.gz overlay.tar.gz
         - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
         - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings

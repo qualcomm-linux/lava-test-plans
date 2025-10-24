@@ -4,7 +4,6 @@
 {% set DOCKER_IMAGE_DEPLOY = DOCKER_IMAGE_DEPLOY|default("debian:buster") %}
 {% set DOCKER_IMAGE_POSTPROCESS = DOCKER_IMAGE_POSTPROCESS|default("debian:buster") %}
 {% set IMAGE_FILE_NAME = IMAGE_FILE_NAME|default("rootfs.tar.gz") %}
-{% set apply_overlay = apply_overlay|default("rootfs") %}
 {% set pre_boot_command = pre_boot_command|default(false) %}
 {% set pre_power_command = pre_power_command|default(false) %}
 {% set pre_os_command = pre_os_command|default(false) %}
@@ -18,6 +17,11 @@
 
 {% block actions %}
 {% block deploy_target %}
+
+{% if enable_tests is defined and enable_tests %}
+{% set apply_overlay = "rootfs" %}
+{% endif %}
+
 - deploy:
     timeout:
       minutes: {{ target_downloads_timeout }}
@@ -47,7 +51,7 @@
       settings:
         url: downloads://flash.settings
 {% endif %}
-{% if apply_overlay == "rootfs" %} 
+{% if apply_overlay is defined and apply_overlay == "rootfs" %} 
       overlay:
         url: downloads://overlay.tar.gz 
 {% endif %}
