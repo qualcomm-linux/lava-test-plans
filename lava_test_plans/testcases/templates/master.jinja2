@@ -4,7 +4,7 @@
 {% set BUILD_NUMBER = BUILD_NUMBER|default("") %}
 {% set KERNEL_BRANCH = KERNEL_BRANCH|default("unknown") %}
 {% set OS_INFO = OS_INFO|default("") %}
-{% set EXTRA_KERNEL_ARGS = EXTRA_KERNEL_ARGS|default(null) %}
+{% set EXTRA_KERNEL_ARGS = EXTRA_KERNEL_ARGS|default() %}
 
 {# with the BUILD_NUMBER in the middle, it's possible to get #}
 {# the sub job name(which is the test_name here) #}
@@ -13,7 +13,7 @@
 
 {% block context %}
 {{ super() }}
-  {%- if EXTRA_KERNEL_ARGS is defined %}
+  {%- if EXTRA_KERNEL_ARGS is defined and EXTRA_KERNEL_ARGS %}
   extra_kernel_args: '{{EXTRA_KERNEL_ARGS}}'
   {%- endif %}
 {% endblock context %}

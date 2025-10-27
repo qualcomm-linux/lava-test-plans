@@ -3,9 +3,11 @@
 "BUILD_NUMBER": "123"
 "BOOT_URL": "boot-url"
 # QCOM variables
-"OS_INFO": "variable-value"
 "BOOT_URL_COMP": "gz"
+"BOOT_IMG_FILE": "boot-apq8096-db820c-qcom-armv8a.img"
+"ROOTFS_IMG_FILE": "variable-value"
 "ROOTFS_URL": "variable-value"
+"BUILD_DOWNLOAD_URL": "variable-value"
 "# ROOTFS_URL_FORMAT": "variable-value"
 "ROOTFS_URL_COMP": "xz"
 "DEPLOY_OS": "variable-value"

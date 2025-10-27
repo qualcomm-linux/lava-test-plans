@@ -42,7 +42,7 @@ meta_qcom_devices = [
     for d in glob.glob("lava_test_plans/projects/meta-qcom/devices/*")
 ]
 assert len(meta_qcom_devices) > 0
-meta_qcom_testplans = ["meta-qcom/kernel"]
+meta_qcom_testplans = ["meta-qcom/poky-altcfg", "meta-qcom/qcom-distro"]
 assert len(meta_qcom_testplans) > 0
 meta_qcom_variable_input_file = "projects/meta-qcom/variables.yaml"
 tests = []
@@ -59,7 +59,7 @@ for device in meta_qcom_devices:
 
 
 @pytest.mark.parametrize("param", tests)
-def test_call_lava_test_plan_testplans_project_lt_qcom(param):
+def test_call_lava_test_plan_testplans_project_meta_qcom(param):
     variable_input_file, device, testplan, project_device_path = param
     sys.argv = shlex.split(
         f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity}'
