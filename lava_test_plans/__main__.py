@@ -42,7 +42,7 @@ from lava_test_plans.utils import (
     validate_variables,
 )
 
-FORMAT = "[%(funcName)16s() ] %(message)s"
+FORMAT = "[%(module)s][%(funcName)16s() %(lineno)d ] %(message)s"
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger(__name__)
 

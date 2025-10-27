@@ -14,8 +14,6 @@ from configobj import ConfigObj, ConfigObjError
 from ruamel.yaml import YAML
 
 
-FORMAT = "[%(funcName)16s() ] %(message)s"
-logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger(__name__)
 
 
