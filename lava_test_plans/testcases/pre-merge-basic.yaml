@@ -9,27 +9,22 @@
       name: "hotplug"
       path: Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "remoteproc"
       path: Runner/suites/Kernel/Baseport/remoteproc/remoteproc.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "CPUFreq_Validation"
       path: Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "Interrupts"
       path: Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "cdsp_remoteproc"
       path: Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "adsp_remoteproc"
       path: Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml
@@ -38,30 +33,24 @@
       name: "WiFi_Firmware_Driver"
       path: Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "WiFi_OnOff"
       path: Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "OpenCV"
       path: Runner/suites/Multimedia/OpenCV/OpenCV.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "AudioRecord"
       path: Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "irq"
       path: Runner/suites/Kernel/Baseport/irq/irq.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions
     - from: git
       name: "BT_ON_OFF"
       path: Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      branch: individual-test-definitions 
 {% endblock test_target %}
