@@ -4,6 +4,7 @@
 {% set DOCKER_IMAGE_DEPLOY = DOCKER_IMAGE_DEPLOY|default("debian:buster") %}
 {% set DOCKER_IMAGE_POSTPROCESS = DOCKER_IMAGE_POSTPROCESS|default("debian:buster") %}
 {% set IMAGE_FILE_NAME = IMAGE_FILE_NAME|default("rootfs.tar.gz") %}
+{% set FLASHER_DEVICE_TYPE = FLASHER_DEVICE_TYPE|default(device_type) %}
 {% set pre_boot_command = pre_boot_command|default(false) %}
 {% set pre_power_command = pre_power_command|default(false) %}
 {% set pre_os_command = pre_os_command|default(false) %}

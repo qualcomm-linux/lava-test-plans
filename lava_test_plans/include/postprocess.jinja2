@@ -5,5 +5,5 @@
         - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
         - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
 {% endif %}
-        - echo "DEVICE_TYPE={{device_type}}" >> $IMAGE_PATH/flash.settings
+        - echo "DEVICE_TYPE={{FLASHER_DEVICE_TYPE}}" >> $IMAGE_PATH/flash.settings
         - cat $IMAGE_PATH/flash.settings 
