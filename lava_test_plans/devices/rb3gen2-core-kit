@@ -1,0 +1,9 @@
+{% set PROJECT = PROJECT|default("") %}
+{% extends PROJECT+"flasher.jinja2" %}
+
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@rb3gen2-core-kit") %}
+{% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+
+{% set rootfs_label = 'rootfs' %}
+
+{% block device_type %}rb3gen2-core-kit{% endblock %}
