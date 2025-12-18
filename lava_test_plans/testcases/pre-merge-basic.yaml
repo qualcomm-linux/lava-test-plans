@@ -38,10 +38,6 @@
       path: Runner/suites/Multimedia/OpenCV/OpenCV.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
     - from: git
-      name: "AudioRecord"
-      path: Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
       name: "irq"
       path: Runner/suites/Kernel/Baseport/irq/irq.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
