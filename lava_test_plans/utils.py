@@ -10,11 +10,48 @@
 import os
 import argparse
 import logging
+import subprocess
 from configobj import ConfigObj, ConfigObjError
 from ruamel.yaml import YAML
 
 
 logger = logging.getLogger(__name__)
+
+
+def generate_audio_clips_url():
+
+    try:
+        result = subprocess.run(
+            [
+                "aws",
+                "s3",
+                "presign",
+                "s3://qcom-prd-gh-artifacts/qualcomm-linux/test-media-assets/AudioClips.tar.gz",
+                "--expires-in",
+                "196000",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            url = result.stdout.strip()
+            logger.info(f"Generated audio clips URL: {url[:80]}...")
+            return url
+        else:
+            logger.warning(f"Failed to generate audio URL: {result.stderr}")
+            return None
+    except subprocess.TimeoutExpired:
+        logger.warning("AWS CLI command timed out while generating audio URL")
+        return None
+    except FileNotFoundError:
+        logger.warning(
+            "AWS CLI not found. Install AWS CLI to enable audio clip support."
+        )
+        return None
+    except Exception as e:
+        logger.warning(f"Error generating audio URL: {e}")
+        return None
 
 
 def get_context(script_dirname, args_variables, args_overwrite_variables):
