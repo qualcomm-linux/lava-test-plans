@@ -40,6 +40,7 @@ from lava_test_plans.utils import (
     get_context,
     overlay_action,
     validate_variables,
+    generate_audio_clips_url,
 )
 
 FORMAT = "[%(module)s][%(funcName)16s() %(lineno)d ] %(message)s"
@@ -391,6 +392,21 @@ def main():
     )
     j2_env.globals["compression"] = compression
     context = get_context(script_dirname, args.variables, args.overwrite_variables)
+
+    # Auto-generate audio clips URL if AUDIO_CLIPS_BASE_DIR is defined but AUDIO_CLIPS_URL is empty
+    if context.get("AUDIO_CLIPS_BASE_DIR") and not context.get("AUDIO_CLIPS_URL"):
+        logger.info(
+            "AUDIO_CLIPS_BASE_DIR is defined but AUDIO_CLIPS_URL is empty. Generating audio URL..."
+        )
+        audio_url = generate_audio_clips_url()
+        if audio_url:
+            context["AUDIO_CLIPS_URL"] = audio_url
+            logger.info("Audio clips URL generated successfully")
+        else:
+            logger.warning(
+                "Failed to generate audio clips URL. Audio tests may not work correctly."
+            )
+
     context.update({"device_type": args.device_type})
     context.update({"overlays": overlays})
     test_list = []

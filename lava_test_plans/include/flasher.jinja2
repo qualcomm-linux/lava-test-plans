@@ -33,6 +33,10 @@
 {% if use_download_headers %}
         {% include PROJECT+"include/auth-header.jinja2" %}
 {% endif %}
+{% if AUDIO_CLIPS_URL is defined %}
+      audio:
+        url: {{ AUDIO_CLIPS_URL }}
+{% endif %}
 {% if download_postprocess_required == true %}
     postprocess:
       docker:
