@@ -2,6 +2,12 @@
         - export IMAGE_PATH=$PWD
 {% if apply_overlay is defined and apply_overlay == "rootfs" %} 
         - cp overlay*.tar.gz overlay.tar.gz
+{% if AUDIO_CLIPS_URL is defined %}
+        - mkdir overlay_root
+        - tar -xzvf overlay.tar.gz -C overlay_root
+        - tar -xzvf AudioClips.tar.gz -C overlay_root
+        - tar -czf overlay.tar.gz -C overlay_root .
+{% endif %}
         - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
         - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
 {% endif %}
