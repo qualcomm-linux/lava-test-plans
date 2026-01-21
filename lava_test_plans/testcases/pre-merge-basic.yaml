@@ -49,7 +49,7 @@
       name: "AudioRecord"
       path: Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    {% if AUDIO_CLIPS_URL %}
+    {% if AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL %}
     - from: git
       name: "AudioPlayback"
       path: Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml

@@ -1,11 +1,13 @@
 from lava_test_plans.__main__ import main
 
 from unittest import TestCase
+from unittest.mock import patch, MagicMock
 import sys
 import glob
 import os
 import pytest
 import shlex
+import tempfile
 
 test_lava_validity = (
     "" if os.getenv("SKIP_TEST_LAVA_VALIDITY") else "--test-lava-validity"
