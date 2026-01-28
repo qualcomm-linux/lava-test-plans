@@ -1,0 +1,10 @@
+DEVICE_TYPE: rb3gen2-core-kit
+KERNEL_URL: unknown
+BOOT_URL: unknown
+MODULES_URL: unknown
+ROOTFS_URL: unknown
+LAVA_JOB_PRIORITY: 25
+
+# Tests to exclude for this device
+EXCLUDED_TESTS:
+  - Ethernet
