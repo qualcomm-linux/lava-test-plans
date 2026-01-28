@@ -1,0 +1,4 @@
+{% extends "devices/rb3gen2-core-kit" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ["Ethernet"] %}

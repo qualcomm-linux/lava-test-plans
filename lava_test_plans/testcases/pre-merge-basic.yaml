@@ -3,62 +3,42 @@
 {% set test_name = test_name | default("pre-merge-basic") %}
 {% set test_timeout = 240 %}
 
+{# Get excluded tests list from device file #}
+{% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+
+{# Define all tests with their details and pre-evaluate conditions #}
+{% set all_tests = [
+    {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml"},
+    {"name": "CPUFreq_Validation", "path": "Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml"},
+    {"name": "Interrupts", "path": "Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml"},
+    {"name": "cdsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml"},
+    {"name": "adsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml"},
+    {"name": "WiFi_Firmware_Driver", "path": "Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml"},
+    {"name": "WiFi_OnOff", "path": "Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml"},
+    {"name": "OpenCV", "path": "Runner/suites/Multimedia/OpenCV/OpenCV.yaml"},
+    {"name": "irq", "path": "Runner/suites/Kernel/Baseport/irq/irq.yaml"},
+    {"name": "BT_ON_OFF", "path": "Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml"},
+    {"name": "AudioRecord", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml"},
+    {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}},
+    {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml"},
+    {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml"}
+] %}
+
 {% block test_target %}
   {{ super() }}
+    {% for test in all_tests %}
+    {# Check if test should be included (not excluded AND condition met if specified) #}
+    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
     - from: git
-      name: "hotplug"
-      path: Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml
+      name: "{{ test.name }}"
+      path: {{ test.path }}
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "CPUFreq_Validation"
-      path: Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "Interrupts"
-      path: Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "cdsp_remoteproc"
-      path: Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "adsp_remoteproc"
-      path: Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "WiFi_Firmware_Driver"
-      path: Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "WiFi_OnOff"
-      path: Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "OpenCV"
-      path: Runner/suites/Multimedia/OpenCV/OpenCV.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "irq"
-      path: Runner/suites/Kernel/Baseport/irq/irq.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "BT_ON_OFF"
-      path: Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    - from: git
-      name: "AudioRecord"
-      path: Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-    {% if AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL %}
-    - from: git
-      name: "AudioPlayback"
-      path: Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      {% if test.params is defined %}
       params:
-        AUDIO_CLIPS_BASE_DIR: "/home/AudioClips/"
+        {% for param_key, param_value in test.params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+      {% endif %}
     {% endif %}
-    - from: git
-      name: "DSP_AudioPD"
-      path: Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    {% endfor %}
 {% endblock test_target %}
