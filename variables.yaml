@@ -66,3 +66,7 @@
 "TEST_DEFINITIONS_REPOSITORY": "https://github.com/Linaro/test-definitions.git"
 "AUDIO_CLIPS_BASE_DIR": /home/AudioClips/
 "AUDIO_CLIPS_URL": ""
+DEVICE_EXCLUSIONS:
+  iq-9075-evk: []
+  rb3gen2-core-kit:
+    - Ethernet
