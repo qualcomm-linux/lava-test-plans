@@ -1,0 +1,20 @@
+{% extends "include/flasher.jinja2" %}
+
+{% block deploy_target %}
+{{ super() }}
+{% endblock deploy_target %}
+
+{% block metadata %}
+  source: https://github.com/Linaro/lava-test-plans.git
+  path: projects/meta-qcom-distro/
+{% if OS_INFO %}
+{% include PROJECT+"include/meta-qcom-distro-"+OS_INFO+"-metadata.jinja2" %}
+{% else %}
+{% include PROJECT+"include/meta-qcom-distro-metadata.jinja2" %}
+{% endif %}
+{% endblock metadata %}
+
+{% block context %}
+  lava_test_results_dir: /home/lava-%s
+  test_character_delay: 10
+{% endblock context %}

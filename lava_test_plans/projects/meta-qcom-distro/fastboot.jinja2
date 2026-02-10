@@ -1,0 +1,56 @@
+{% extends "include/fastboot.jinja2" %}
+
+{% set DEPLOY_TARGET = DEPLOY_TARGET|default("fastboot") %}
+{% set download_postprocess_required = false %}
+{% set DEPLOY_OS = "" %}
+{% set BUILD_OS = BUILD_OS|default("poky-altcfg") %}
+{% set BUILD_MACHINE = BUILD_MACHINE|default("qcom-armv8a") %}
+{% set DOCKER_IMAGE_POSTPROCESS = DOCKER_IMAGE_POSTPROCESS|default("ghcr.io/foundriesio/lava-lmp-sign:main") %}
+{% set BOOT_LABEL = "boot" %}
+{% set BOOT_URL = "downloads://" + BOOT_IMG_FILE %}
+{% set ROOTFS_URL = "downloads://" + ROOTFS_IMG_FILE + ".img" %}
+{% set ROOTFS_URL_COMP = null %}
+{% set target_deploy_timeout = 15 %}
+{% set use_download_headers = use_download_headers|default(false) %}
+
+{% block metadata %}
+  source: https://github.com/Linaro/lava-test-plans.git
+  path: projects/meta-qcom-distro/
+{% if OS_INFO %}
+{% include PROJECT+"include/meta-qcom-distro-"+OS_INFO+"-metadata.jinja2" %}
+{% else %}
+{% include PROJECT+"include/meta-qcom-distro-metadata.jinja2" %}
+{% endif %}
+{% endblock metadata %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: {{ target_downloads_timeout }}
+    to: downloads
+    images:
+      boot:
+{% if use_download_headers %}
+        {% include PROJECT+"include/auth-header.jinja2" %}
+{% endif %}
+        url: "{{ BUILD_DOWNLOAD_URL }}/{{ BUILD_OS }}/{{ BUILD_MACHINE }}/{{ BOOT_IMG_FILE }}"
+      rootfs:
+{% if use_download_headers %}
+        {% include PROJECT+"include/auth-header.jinja2" %}
+{% endif %}
+        url: "{{ BUILD_DOWNLOAD_URL }}/{{ BUILD_OS }}/{{ BUILD_MACHINE }}/{{ ROOTFS_IMG_FILE }}.gz"
+        compression: gz
+    postprocess:
+      docker:
+        image: {{ DOCKER_IMAGE_POSTPROCESS }}
+        steps:
+        - export IMAGE_PATH=$PWD
+        - img2simg {{ ROOTFS_IMG_FILE }} {{ ROOTFS_IMG_FILE }}.img
+{{ super() }}
+{% endblock deploy_target %}
+
+{% block pre_boot_command %}
+{% endblock pre_boot_command %}
+
+{% block post_boot_command %}
+{% endblock post_boot_command %}
