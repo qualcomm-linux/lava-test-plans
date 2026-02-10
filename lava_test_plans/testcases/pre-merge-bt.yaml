@@ -1,7 +1,7 @@
 {% extends "testcases/templates/master.jinja2" %}
 
 {% set test_name = test_name | default("pre-merge-bt") %}
-{% set test_timeout = 30 %}
+{% set test_timeout = 5 %}
 
 {# Conditional tags based on device type #}
 {% if device_type == "iq-9075-evk" %}
