@@ -1,0 +1,115 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{% set test_name = test_name | default("nightly_runs") %}
+{% set test_timeout = 240 %}
+
+{% block test_target %}
+  {{ super() }}
+    # Connectivity Tests
+    - from: git
+      name: "BT_ON_OFF"
+      path: Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "BT_SCAN"
+      path: Runner/suites/Connectivity/Bluetooth/BT_SCAN/BT_SCAN.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "Ethernet"
+      path: Runner/suites/Connectivity/Ethernet/Ethernet.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "WiFi_Firmware_Driver"
+      path: Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "WiFi_OnOff"
+      path: Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    
+    # Kernel Tests
+    - from: git
+      name: "adsp_remoteproc"
+      path: Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "Buses"
+      path: Runner/suites/Kernel/Baseport/Buses/Buses.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "cdsp_remoteproc"
+      path: Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "CPUFreq_Validation"
+      path: Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "gpdsp_remoteproc"
+      path: Runner/suites/Kernel/Baseport/gpdsp_remoteproc/gpdsp_remoteproc.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "hotplug"
+      path: Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "Interrupts"
+      path: Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "IPCC"
+      path: Runner/suites/Kernel/Baseport/IPCC/IPCC.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "irq"
+      path: Runner/suites/Kernel/Baseport/irq/irq.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "remoteproc"
+      path: Runner/suites/Kernel/Baseport/remoteproc/remoteproc.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "UFS_Validation"
+      path: Runner/suites/Kernel/Baseport/Storage/UFS_Validation/UFS_Validation.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "watchdog"
+      path: Runner/suites/Kernel/Baseport/watchdog/watchdog.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "wpss_remoteproc"
+      path: Runner/suites/Kernel/Baseport/wpss_remoteproc/wpss_remoteproc.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "Freq_Scaling"
+      path: Runner/suites/Kernel/DCVS/Freq_Scaling/Freq_Scaling.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    
+    # Multimedia Tests
+    - from: git
+      name: "fastrpc_test"
+      path: Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "DSP_AudioPD"
+      path: Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "KMSCube"
+      path: Runner/suites/Multimedia/Graphics/KMSCube/KMSCube.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "weston-simple-egl"
+      path: Runner/suites/Multimedia/Graphics/weston-simple-egl/weston-simple-egl.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    - from: git
+      name: "OpenCV"
+      path: Runner/suites/Multimedia/OpenCV/OpenCV.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+    
+    # Performance Tests
+    - from: git
+      name: "resource-tuner"
+      path: Runner/suites/Performance/resource-tuner/resource-tuner.yaml
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+{% endblock test_target %}
