@@ -14,8 +14,12 @@
       name: "BT_FW_KMD_Service"
       path: Runner/suites/Connectivity/Bluetooth/BT_FW_KMD_Service/BT_FW_KMD_Service.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      expected:
+        - "BT_FW_KMD_Service"
     - from: git
       name: "BT_SCAN"
       path: Runner/suites/Connectivity/Bluetooth/BT_SCAN/BT_SCAN.yaml
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      expected:
+        - "BT_SCAN"
 {% endblock test_target %}

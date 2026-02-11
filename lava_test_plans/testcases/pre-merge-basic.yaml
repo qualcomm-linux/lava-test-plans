@@ -8,20 +8,20 @@
 
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
-    {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml"},
-    {"name": "CPUFreq_Validation", "path": "Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml"},
-    {"name": "Interrupts", "path": "Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml"},
-    {"name": "cdsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml"},
-    {"name": "adsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml"},
-    {"name": "WiFi_Firmware_Driver", "path": "Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml"},
-    {"name": "WiFi_OnOff", "path": "Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml"},
-    {"name": "OpenCV", "path": "Runner/suites/Multimedia/OpenCV/OpenCV.yaml"},
-    {"name": "irq", "path": "Runner/suites/Kernel/Baseport/irq/irq.yaml"},
-    {"name": "BT_ON_OFF", "path": "Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml"},
-    {"name": "AudioRecord", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml"},
-    {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}},
-    {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml"},
-    {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml"}
+    {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml", "expected": ["hotplug"]},
+    {"name": "CPUFreq_Validation", "path": "Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml", "expected": ["CPUFreq_Validation"]},
+    {"name": "Interrupts", "path": "Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml", "expected": ["Interrupts"]},
+    {"name": "cdsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml", "expected": ["cdsp_remoteproc"]},
+    {"name": "adsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/adsp_remoteproc/adsp_remoteproc.yaml", "expected": ["adsp_remoteproc"]},
+    {"name": "WiFi_Firmware_Driver", "path": "Runner/suites/Connectivity/WiFi/WiFi_Firmware_Driver/WiFi_Firmware_Driver.yaml", "expected": ["WiFi_Firmware_Driver"]},
+    {"name": "WiFi_OnOff", "path": "Runner/suites/Connectivity/WiFi/WiFi_OnOff/WiFi_OnOff.yaml", "expected": ["WiFi_OnOff"]},
+    {"name": "OpenCV", "path": "Runner/suites/Multimedia/OpenCV/OpenCV.yaml", "expected": ["OpenCV"]},
+    {"name": "irq", "path": "Runner/suites/Kernel/Baseport/irq/irq.yaml", "expected": ["irq"]},
+    {"name": "BT_ON_OFF", "path": "Runner/suites/Connectivity/Bluetooth/BT_ON_OFF/BT_ON_OFF.yaml", "expected": ["BT_ON_OFF"]},
+    {"name": "AudioRecord", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "expected": ["AudioRecord"]},
+    {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}, "expected": ["AudioPlayback"]},
+    {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml", "expected": ["Ethernet"]},
+    {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml", "expected": ["DSP_AudioPD"]}
 ] %}
 
 {% block test_target %}
@@ -39,6 +39,13 @@
         {{ param_key }}: "{{ param_value }}"
         {% endfor %}
       {% endif %}
+      {% if test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+
     {% endif %}
     {% endfor %}
 {% endblock test_target %}
