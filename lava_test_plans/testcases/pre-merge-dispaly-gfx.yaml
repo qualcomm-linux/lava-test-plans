@@ -1,22 +1,19 @@
 {% extends "testcases/templates/master.jinja2" %}
 
-{% set test_name = test_name | default("pre-merge-bt") %}
+{% set test_name = test_name | default("pre-merge-display-gfx") %}
 {% set test_timeout = 30 %}
 
 {# Get excluded tests list from device file #}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
 
-{# Conditional tags based on device type #}
-{% if device_type == "iq-9075-evk" %}
-{% set TAGS = ["pvt"] %}
-{% endif %}
+{% set TAGS = ["display"] %}
 
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
-    {"name": "BT_FW_KMD_Service", "path": "Runner/suites/Connectivity/Bluetooth/BT_FW_KMD_Service/BT_FW_KMD_Service.yaml"},
-    {"name": "BT_SCAN", "path": "Runner/suites/Connectivity/Bluetooth/BT_SCAN/BT_SCAN.yaml"}
+    {"name": "core_auth", "path": "Runner/suites/Multimedia/Display/igt-gpu-tools/core_auth/core_auth.yaml"},
+    {"name": "KMSCube", "path": "Runner/suites/Multimedia/Graphics/KMSCube/KMSCube.yaml"},
+    {"name": "weston-simple-egl", "path": "Runner/suites/Multimedia/Graphics/weston-simple-egl/weston-simple-egl.yaml"},
 ] %}
-
 
 {% block test_target %}
   {{ super() }}
