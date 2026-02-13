@@ -1,1 +1,4 @@
 {% extends "devices/rb1-core-kit" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ["fastrpc_test"] %}

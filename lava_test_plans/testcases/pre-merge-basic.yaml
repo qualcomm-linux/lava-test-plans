@@ -21,7 +21,8 @@
     {"name": "AudioRecord", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml"},
     {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}},
     {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml"},
-    {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml"}
+    {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml"},
+    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml"}
 ] %}
 
 {% block test_target %}
