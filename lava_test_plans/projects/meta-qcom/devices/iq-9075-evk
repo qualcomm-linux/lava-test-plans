@@ -1,4 +1,1 @@
 {% extends "devices/iq-9075-evk" %}
-
-{# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ["AudioRecord"] %}
