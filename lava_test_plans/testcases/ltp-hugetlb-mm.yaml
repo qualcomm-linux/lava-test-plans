@@ -1,4 +1,0 @@
-{% extends "testcases/templates/ltp.yaml.jinja2" %}
-
-{% set testnames = ['hugetlb', 'mm'] %}
-{% set test_timeout = 60 %}

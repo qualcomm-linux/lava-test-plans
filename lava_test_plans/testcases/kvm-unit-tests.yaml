@@ -1,3 +1,0 @@
-{% extends "testcases/templates/kvm-unit-tests.yaml.jinja2" %}
-
-{% set test_timeout = 25 %}

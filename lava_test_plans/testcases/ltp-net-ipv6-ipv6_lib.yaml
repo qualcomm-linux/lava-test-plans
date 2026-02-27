@@ -1,4 +1,0 @@
-{% extends "testcases/templates/ltp.yaml.jinja2" %}
-
-{% set testnames = ['net.ipv6', 'net.ipv6_lib'] %}
-{% set test_timeout = 15 %}

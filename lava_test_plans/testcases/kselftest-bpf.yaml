@@ -1,4 +1,0 @@
-{% extends "testcases/templates/kselftest.yaml.jinja2" %}
-
-{% set testnames = ['bpf'] %}
-{% set test_timeout = 45 %}

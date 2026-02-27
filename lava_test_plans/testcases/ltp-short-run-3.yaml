@@ -1,4 +1,0 @@
-{% extends "testcases/templates/ltp.yaml.jinja2" %}
-
-{% set testnames = ['nptl', 'pty', 'securebits'] %}
-{% set test_timeout = 30 %}

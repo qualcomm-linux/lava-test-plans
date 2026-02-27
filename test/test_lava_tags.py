@@ -12,7 +12,7 @@ test_lava_validity = (
 )
 
 devices = ["qemu_arm64"]
-testcase = "ltp-syscalls.yaml"
+testcase = "boot.yaml"
 variable_input_files = ["test/variables-tags.ini", "test/variables-tags-one-tag.ini"]
 tests = []
 for device in devices:

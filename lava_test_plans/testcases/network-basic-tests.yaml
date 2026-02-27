@@ -1,3 +1,0 @@
-{% extends "testcases/templates/network-basic-tests.yaml.jinja2" %}
-
-{% set test_timeout = 25 %}

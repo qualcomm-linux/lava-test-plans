@@ -1,4 +1,0 @@
-{% extends "testcases/templates/ltp.yaml.jinja2" %}
-
-{% set testnames = ['quickhit'] %}
-{% set test_timeout = 45 %}

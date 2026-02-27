@@ -1,4 +1,0 @@
-{% extends "testcases/templates/ltp.yaml.jinja2" %}
-
-{% set testnames = ['net.sctp'] %}
-{% set test_timeout = 20 %}

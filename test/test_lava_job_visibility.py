@@ -12,7 +12,7 @@ test_lava_validity = (
 )
 
 devices = ["qemu_arm64"]
-testcase = "ltp-syscalls.yaml"
+testcase = "boot.yaml"
 variable_input_files = [
     "test/variables-visibility.ini",
     "test/variables-visibility-one-group.ini",
