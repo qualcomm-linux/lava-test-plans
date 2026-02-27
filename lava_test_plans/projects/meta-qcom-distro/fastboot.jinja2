@@ -14,6 +14,7 @@
 {% set use_download_headers = use_download_headers|default(false) %}
 
 {% block metadata %}
+metadata:
   source: https://github.com/Linaro/lava-test-plans.git
   path: projects/meta-qcom-distro/
 {% if OS_INFO %}
