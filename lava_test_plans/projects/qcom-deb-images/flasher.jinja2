@@ -16,3 +16,12 @@ metadata:
 {% block context %}
   test_character_delay: 10
 {% endblock context %}
+
+{% block auto_login_commands %}
+      login_commands:
+        - "debian"
+        - "new password"
+        - "new password"
+        - sudo su
+{% endblock auto_login_commands %}
+
