@@ -151,8 +151,7 @@ def _submit_to_squad(lava_job, lava_url_base, qa_server_api, qa_server_base, qa_
 
 def _submit_to_lava(lava_job, lava_url_base, lava_username, lava_token):
     if not (
-        lava_url_base.startswith("http://")
-        or lava_url_base.startswith("https://")
+        lava_url_base.startswith("http://") or lava_url_base.startswith("https://")
     ):
         lava_url_base = "https://" + lava_url_base
 
@@ -407,7 +406,7 @@ def main():
             if args.dryrun
             else StrictUndefined
         ),
-        extensions=['jinja2.ext.loopcontrols']
+        extensions=["jinja2.ext.loopcontrols"],
     )
     j2_env.globals["compression"] = compression
     context = get_context(script_dirname, args.variables, args.overwrite_variables)
