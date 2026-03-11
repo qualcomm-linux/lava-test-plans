@@ -1,6 +1,8 @@
 {% extends "include/flasher.jinja2" %}
 
 {% set device_type = "debian-" + device_type %}
+{% set ADDITIONAL_POSTPROCESS_STEPS = ['echo "ROOTFS_IMAGE=disk-sdcard.img2" >> $IMAGE_PATH/flash.settings'] %}
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@debian") %}
 
 {% block deploy_target %}
 {{ super() }}
@@ -14,6 +16,7 @@ metadata:
 {% endblock metadata %}
 
 {% block context %}
+  lava_test_results_dir: /home/lava-%s
   test_character_delay: 10
 {% endblock context %}
 
