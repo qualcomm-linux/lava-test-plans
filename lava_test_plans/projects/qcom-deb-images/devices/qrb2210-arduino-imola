@@ -1,0 +1,3 @@
+{% extends "devices/unoq" %}
+
+{% set flasher_device_type = "debian-qrb2210-arduino-imola_emmc" %}
