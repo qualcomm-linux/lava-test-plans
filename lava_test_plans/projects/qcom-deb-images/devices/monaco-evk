@@ -1,0 +1,3 @@
+{% extends "devices/iq-8075-evk" %}
+
+{% set flasher_device_type = "debian-monaco-evk_ufs" %}

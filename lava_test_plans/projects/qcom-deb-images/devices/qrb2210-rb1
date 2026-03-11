@@ -1,0 +1,3 @@
+{% extends "devices/qrb2210-rb1-core-kit" %}
+
+{% set flasher_device_type = "debian-qrb2210-rb1_emmc" %}
