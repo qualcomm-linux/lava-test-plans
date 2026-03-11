@@ -81,7 +81,10 @@ qcom_deb_images_devices = [
     for d in glob.glob("lava_test_plans/projects/qcom-deb-images/devices/*")
 ]
 assert len(qcom_deb_images_devices) > 0
-qcom_deb_images_testplans = ["qcom-deb-images"]
+qcom_deb_images_testplans = [
+    "qcom-deb-images/boot",
+    "qcom-deb-images/pre-merge",
+]
 assert len(qcom_deb_images_testplans) > 0
 qcom_deb_images_variable_input_file = "projects/qcom-deb-images/variables.yaml"
 tests = []

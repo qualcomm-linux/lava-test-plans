@@ -1,1 +1,0 @@
-{% extends "devices/qcs6490-rb3gen2-core-kit" %}

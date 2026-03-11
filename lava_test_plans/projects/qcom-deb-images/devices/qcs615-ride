@@ -1,0 +1,3 @@
+{% extends "devices/qcs615-ride" %}
+
+{% set flasher_device_type = "debian-qcs615-ride_ufs" %}
