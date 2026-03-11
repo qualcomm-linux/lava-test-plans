@@ -1,0 +1,3 @@
+{% extends "devices/qcs8300-ride-sx" %}
+
+{% set flasher_device_type = "debian-qcs8300-ride_ufs" %}
