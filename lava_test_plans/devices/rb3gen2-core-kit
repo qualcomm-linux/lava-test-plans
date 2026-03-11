@@ -4,6 +4,15 @@
 {% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@rb3gen2-core-kit") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
 
+{# Camera-specific postprocess steps - only applied when ENABLE_CAMERA_POSTPROCESS is true #}
+{% if ENABLE_CAMERA_POSTPROCESS is defined and ENABLE_CAMERA_POSTPROCESS %}
+{% set ADDITIONAL_POSTPROCESS_STEPS = [
+  'tar xvf qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz',
+  'cp qcom-multimedia-image-rb3gen2-core-kit/cdt_vision_kit.bin qcom-multimedia-image-rb3gen2-core-kit/cdt.bin',
+  'tar czvf qcom-multimedia-image-rb3gen2-core-kit.rootfs.qcomflash.tar.gz qcom-multimedia-image-rb3gen2-core-kit/'
+] %}
+{% endif %}
+
 {% set rootfs_label = 'rootfs' %}
 
 {% block device_type %}rb3gen2-core-kit{% endblock %}
