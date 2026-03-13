@@ -12,5 +12,8 @@
         - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
         - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
 {% endif %}
-        - echo "DEVICE_TYPE={{flasher_device_type}}" >> $IMAGE_PATH/flash.settings
+        - echo "DEVICE_TYPE={{FLASHER_DEVICE_TYPE}}" >> $IMAGE_PATH/flash.settings
+{% if TAGS is defined and TAGS is sequence and "has-camera" in TAGS %}
+{% include "include/postprocess_vision_kit.jinja2" %}
+{% endif %}
         - cat $IMAGE_PATH/flash.settings 

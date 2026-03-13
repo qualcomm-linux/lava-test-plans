@@ -22,7 +22,9 @@
     {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}, "expected": ["AudioPlayback"]},
     {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml", "expected": ["Ethernet"]},
     {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml", "expected": ["DSP_AudioPD"]},
-    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]}
+    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]},
+    {"name": "Libcamera_cam", "path": "Runner/suites/Multimedia/Camera/Libcamera_cam/Libcamera_cam.yaml", "expected": ["Libcamera_cam"]},
+    {"name": "Camera_RDI_FrameCapture", "path": "Runner/suites/Multimedia/Camera/Camera_RDI_FrameCapture/Camera_RDI_FrameCapture.yaml", "expected": ["Camera_RDI_FrameCapture"]}
 ] %}
 
 {% block test_target %}
