@@ -1,3 +1,0 @@
-{% extends "devices/kaanapali-mtp" %}
-
-{% set flasher_device_type = "kaanapali-mtp" %}
