@@ -13,4 +13,9 @@
         - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
 {% endif %}
         - echo "DEVICE_TYPE={{flasher_device_type}}" >> $IMAGE_PATH/flash.settings
+{% if ADDITIONAL_POSTPROCESS_STEPS is defined and ADDITIONAL_POSTPROCESS_STEPS is sequence %}
+{% for step in ADDITIONAL_POSTPROCESS_STEPS %}
+        - {{ step }}
+{% endfor %}
+{% endif %}
         - cat $IMAGE_PATH/flash.settings 
