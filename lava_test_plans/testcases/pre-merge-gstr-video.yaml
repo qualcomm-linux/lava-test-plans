@@ -1,0 +1,41 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{% set test_name = test_name | default("pre-merge-gstr-video") %}
+{% set test_timeout = 10 %}
+
+{# Get excluded tests list from device file #}
+{% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+
+{# Define all tests with their details and pre-evaluate conditions #}
+{% set all_tests = [
+    {"name": "GStreamer_Video_Encode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h264"}, "expected": ["GStreamer_Video_Encode_h264_480p"]},
+    {"name": "GStreamer_Video_Encode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h265"}, "expected": ["GStreamer_Video_Encode_h265_480p"]},
+    {"name": "GStreamer_Video_Decode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h264"}, "expected": ["GStreamer_Video_Decode_h264_480p"]},
+    {"name": "GStreamer_Video_Decode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h265"}, "expected": ["GStreamer_Video_Decode_h265_480p"]}
+] %}
+
+{% block test_target %}
+  {{ super() }}
+    {% for test in all_tests %}
+    {# Check if test should be included (not excluded AND condition met if specified) #}
+    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+    - from: git
+      name: "{{ test.name }}"
+      path: {{ test.path }}
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      {% if test.params is defined %}
+      params:
+        {% for param_key, param_value in test.params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+      {% endif %}
+      {% if test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+
+    {% endif %}
+    {% endfor %}
+{% endblock test_target %}
