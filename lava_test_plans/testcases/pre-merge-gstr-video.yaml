@@ -8,10 +8,10 @@
 
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
-    {"name": "GStreamer_Video_Encode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h264"}, "expected": ["GStreamer_Video_Encode_h264_480p"]},
-    {"name": "GStreamer_Video_Encode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h265"}, "expected": ["GStreamer_Video_Encode_h265_480p"]},
-    {"name": "GStreamer_Video_Decode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h264"}, "expected": ["GStreamer_Video_Decode_h264_480p"]},
-    {"name": "GStreamer_Video_Decode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h265"}, "expected": ["GStreamer_Video_Decode_h265_480p"]}
+    {"name": "GStreamer_Video_Encode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h264", "LAVA_TESTCASE_ID": "GStreamer_Video_Encode_h264_480p"}, "expected": ["GStreamer_Video_Encode_h264_480p"]},
+    {"name": "GStreamer_Video_Encode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "encode", "VIDEO_CODECS": "h265", "LAVA_TESTCASE_ID": "GStreamer_Video_Encode_h265_480p"}, "expected": ["GStreamer_Video_Encode_h265_480p"]},
+    {"name": "GStreamer_Video_Decode_h264_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h264", "LAVA_TESTCASE_ID": "GStreamer_Video_Decode_h264_480p"}, "expected": ["GStreamer_Video_Decode_h264_480p"]},
+    {"name": "GStreamer_Video_Decode_h265_480p", "path": "Runner/suites/Multimedia/GSTreamer/Video/Video_Encode_Decode/Video_Encode_Decode.yaml", "params": {"VIDEO_TEST_MODE": "decode", "VIDEO_CODECS": "h265", "LAVA_TESTCASE_ID": "GStreamer_Video_Decode_h265_480p"}, "expected": ["GStreamer_Video_Decode_h265_480p"]}
 ] %}
 
 {% block test_target %}
