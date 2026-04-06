@@ -4,6 +4,9 @@
 {% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@qcs8300-ride-sx") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
 
+{# Exclude camera testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
+
 {% set rootfs_label = 'rootfs' %}
 
 {% block device_type %}qcs8300-ride-sx{% endblock %}

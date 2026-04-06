@@ -427,6 +427,29 @@ def main():
 
     context.update({"device_type": args.device_type})
     context.update({"overlays": overlays})
+
+    # Load device file to extract EXCLUDED_TESTPLANS using Jinja2
+    device_file_path = os.path.join(args.testplan_device_path, args.device_type)
+    if os.path.exists(device_file_path):
+        try:
+            # Use Jinja2 to render the device template and extract variables
+            device_template = j2_env.get_template(args.device_type)
+            # Create a module from the template to access its namespace
+            device_module = device_template.make_module(context)
+
+            # Extract EXCLUDED_TESTPLANS if it exists in the module
+            if hasattr(device_module, "EXCLUDED_TESTPLANS"):
+                context["EXCLUDED_TESTPLANS"] = device_module.EXCLUDED_TESTPLANS
+                logger.info(
+                    f"Found EXCLUDED_TESTPLANS in device file: {device_module.EXCLUDED_TESTPLANS}"
+                )
+        except TemplateNotFound as e:
+            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+        except TemplateSyntaxError as e:
+            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+        except UndefinedError as e:
+            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+
     test_list = []
     if args.test_plan:
         for test_plan in args.test_plan:
@@ -442,6 +465,17 @@ def main():
     if len(test_list) == 0:
         logger.error("No tests matched the given criteria.")
         return 1
+
+    # Filter out excluded testplans based on device configuration
+    # Only apply exclusions when using --test-plan, not --test-case
+    # (--test-case is an explicit user request to run specific tests)
+    excluded_testplans = context.get("EXCLUDED_TESTPLANS", [])
+    if args.test_plan and excluded_testplans:
+        logger.info(f"Excluding testplans for {args.device_type}: {excluded_testplans}")
+        test_list = [test for test in test_list if test not in excluded_testplans]
+        if len(test_list) == 0:
+            logger.error("All tests were excluded. No tests to run.")
+            return 1
 
     # convert test_list to set to remove potential duplicates
     for test in set(test_list):
