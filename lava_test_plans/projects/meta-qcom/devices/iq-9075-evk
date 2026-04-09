@@ -1,6 +1,3 @@
 {% extends "devices/iq-9075-evk" %}
 
-{# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ["AudioRecord"] %}
-
 {% set flasher_device_type = "iq-9075-evk" %}
