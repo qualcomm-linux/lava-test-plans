@@ -1,0 +1,51 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{% set test_name = "pre-merge-camera" %}
+{% set test_timeout = 5 %}
+
+{# Get excluded tests list from device file #}
+{% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+
+{# Camera job metadata only #}
+{% set TAGS = ["has-camera"] %}
+
+{# Enable camera-specific postprocessing for devices that need it #}
+{% set ENABLE_CAMERA_POSTPROCESS = true %}
+
+{# Define all tests with their details and pre-evaluate conditions #}
+{% set all_tests = [
+    {"name": "Libcamera_cam", "path": "Runner/suites/Multimedia/Camera/Libcamera_cam/Libcamera_cam.yaml", "expected": ["Libcamera_cam"]},
+    {"name": "Camera_RDI_FrameCapture", "path": "Runner/suites/Multimedia/Camera/Camera_RDI_FrameCapture/Camera_RDI_FrameCapture.yaml", "expected": ["Camera_RDI_FrameCapture"]}
+] %}
+
+
+{% block test_target %}
+  {% for test in all_tests %}
+  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+  {{ super() }}
+  {# include the super block once if any tests are included #}
+  {% break %}
+  {% endif %}
+  {% endfor %}
+    {% for test in all_tests %}
+    {# Check if test should be included (not excluded AND condition met if specified) #}
+    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+    - from: git
+      name: "{{ test.name }}"
+      path: {{ test.path }}
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      {% if test.params is defined %}
+      params:
+        {% for param_key, param_value in test.params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+      {% endif %}
+      {% if test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+    {% endfor %}
+{% endblock test_target %}
