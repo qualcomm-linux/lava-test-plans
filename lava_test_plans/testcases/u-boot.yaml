@@ -11,7 +11,7 @@
 {% set run_tftp_commands = run_tftp_commands|default(false) %}
 {% set BOOT_OS_PROMPT = ['=>'] %}
 
-{% set test_name = test_name | default("u-boot") %}
+{% set test_name = "u-boot" %}
 
 {% block test_target %}
   {{ super() }}
