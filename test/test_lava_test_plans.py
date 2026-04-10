@@ -82,8 +82,8 @@ qcom_deb_images_devices = [
 ]
 assert len(qcom_deb_images_devices) > 0
 qcom_deb_images_testplans = [
-    "qcom-deb-images/boot",
-    "qcom-deb-images/pre-merge",
+    "qcom-deb-images/debian/boot",
+    "qcom-deb-images/debian/pre-merge",
 ]
 assert len(qcom_deb_images_testplans) > 0
 qcom_deb_images_variable_input_file = "projects/qcom-deb-images/variables.yaml"
