@@ -10,6 +10,9 @@
 {# BUILD_DOWNLOAD_URL should end with a "/" #}
 {% set rootfs_url = BUILD_DOWNLOAD_URL + image_file_name %}
 
+{# add password change prompts #}
+{% set BOOT_OS_PROMPT = ["debian@debian", "root@debian", "Current password", "New password", "Retype new password"] %}
+
 {% block deploy_target %}
 {{ super() }}
 {% endblock deploy_target %}
