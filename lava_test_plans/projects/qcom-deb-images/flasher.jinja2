@@ -3,6 +3,9 @@
 {% set device_type = "debian-" + device_type %}
 {% set ADDITIONAL_POSTPROCESS_STEPS = ['echo "ROOTFS_IMAGE=disk-sdcard.img2" >> $IMAGE_PATH/flash.settings'] %}
 {% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@debian") %}
+{% set AUTO_LOGIN_USERNAME = AUTO_LOGIN_USERNAME|default("debian") %}
+{% set AUTO_LOGIN_PASSWORD = AUTO_LOGIN_PASSWORD|default("debian") %}
+{% set AUTO_LOGIN_PASSWORD_PROMPT = AUTO_LOGIN_PASSWORD_PROMPT|default("Password") %}
 {% set image_file_name = image_file_name|default("flash-ufs.tar.gz") %}
 {# BUILD_DOWNLOAD_URL should end with a "/" #}
 {% set rootfs_url = BUILD_DOWNLOAD_URL + image_file_name %}
