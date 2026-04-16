@@ -113,7 +113,7 @@ def get_excluded_testplans(device_name):
     # Need both devices and base template directories for extends to work
     template_dirs = ["lava_test_plans", "lava_test_plans/devices"]
     j2_env = Environment(loader=FileSystemLoader(template_dirs))
-    device_template = j2_env.get_template(f"devices/{device_name}")
+    device_template = j2_env.get_template(f"{device_name}")
     device_module = device_template.make_module()
     return getattr(device_module, "EXCLUDED_TESTPLANS", [])
 
@@ -134,7 +134,8 @@ def test_template_count_with_exclusions(device_name, tmp_path):
     # Count testplans from the actual testplan directory being tested
     total_testplans = len(glob.glob(f"{testplan_directory}/*.yaml"))
 
-    excluded = get_excluded_testplans(device_name)
+    full_device_name = f"projects/meta-qcom/devices/{device_name}"
+    excluded = get_excluded_testplans(full_device_name)
     expected_count = total_testplans - len(excluded)
 
     # Use temporary directory for isolated output
@@ -142,7 +143,7 @@ def test_template_count_with_exclusions(device_name, tmp_path):
 
     sys.argv = shlex.split(
         f'lava_test_plans --dry-run --variables "{exclusion_variable_input_file}" '
-        f'--device-type "projects/meta-qcom/devices/{device_name}" '
+        f'--device-type "{full_device_name}" '
         f'--test-plan "meta-qcom/qcom-distro/pre-merge" '
         f'--template-path "lava_test_plans" '
         f'--dry-run-path "{temp_output}"'

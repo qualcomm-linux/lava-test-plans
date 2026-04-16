@@ -3,4 +3,7 @@
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ["fastrpc_test"] %}
 
+{# Exclude camera testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
+
 {% set flasher_device_type = "qrb2210" %}
