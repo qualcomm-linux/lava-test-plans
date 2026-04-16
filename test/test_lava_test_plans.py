@@ -2,6 +2,7 @@ from lava_test_plans.__main__ import main
 
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
+from jinja2 import Environment, FileSystemLoader
 import sys
 import glob
 import os
@@ -104,3 +105,56 @@ def test_call_lava_test_plan_testplans_project_qcom_deb_images(param):
         f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity}'
     )
     assert main() == 0
+
+
+# Test for template count with exclusions - dynamic approach
+def get_excluded_testplans(device_name):
+    """Extract EXCLUDED_TESTPLANS from device file using Jinja2."""
+    # Need both devices and base template directories for extends to work
+    template_dirs = ["lava_test_plans", "lava_test_plans/devices"]
+    j2_env = Environment(loader=FileSystemLoader(template_dirs))
+    device_template = j2_env.get_template(f"devices/{device_name}")
+    device_module = device_template.make_module()
+    return getattr(device_module, "EXCLUDED_TESTPLANS", [])
+
+
+# Test configuration
+test_devices = ["qcs615-ride", "rb3gen2-core-kit", "iq-9075-evk"]
+exclusion_variable_input_file = "variables.ini"
+testplan_directory = "lava_test_plans/testplans/meta-qcom/qcom-distro/pre-merge"
+
+
+@pytest.mark.parametrize("device_name", test_devices)
+def test_template_count_with_exclusions(device_name, tmp_path):
+    """
+    Test that EXCLUDED_TESTPLANS works correctly.
+    Dynamically calculates expected count based on device exclusions.
+    Uses isolated temporary directory and explicitly tests --template-path.
+    """
+    # Count testplans from the actual testplan directory being tested
+    total_testplans = len(glob.glob(f"{testplan_directory}/*.yaml"))
+
+    excluded = get_excluded_testplans(device_name)
+    expected_count = total_testplans - len(excluded)
+
+    # Use temporary directory for isolated output
+    temp_output = tmp_path / "test_output"
+
+    sys.argv = shlex.split(
+        f'lava_test_plans --dry-run --variables "{exclusion_variable_input_file}" '
+        f'--device-type "projects/meta-qcom/devices/{device_name}" '
+        f'--test-plan "meta-qcom/qcom-distro/pre-merge" '
+        f'--template-path "lava_test_plans" '
+        f'--dry-run-path "{temp_output}"'
+    )
+
+    assert main() == 0, f"Failed to generate templates for {device_name}"
+
+    generated_files = glob.glob(
+        str(temp_output / f"projects/meta-qcom/devices/{device_name}/*.yaml")
+    )
+
+    assert len(generated_files) == expected_count, (
+        f"{device_name}: Expected {expected_count} (total={total_testplans}, "
+        f"excluded={excluded}), got {len(generated_files)}"
+    )

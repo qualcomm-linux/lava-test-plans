@@ -347,6 +347,9 @@ def main():
     if args.dry_run_path:
         output_path = os.path.abspath(args.dry_run_path)
 
+    if not os.path.isabs(args.template_path):
+        if not os.path.isdir(args.template_path):
+            args.template_path = os.path.join(script_dirname, args.template_path)
     if not os.path.isabs(args.testplan_path):
         if not os.path.isdir(args.testplan_path):
             args.testplan_path = os.path.join(script_dirname, args.testplan_path)
@@ -393,7 +396,7 @@ def main():
     lava_jobs = []
 
     template_dirs = [
-        os.path.abspath(template_base_path),
+        os.path.abspath(args.template_path),
         os.path.abspath(args.testplan_path),
         os.path.abspath(args.testcase_path),
         os.path.abspath(args.testplan_device_path),
@@ -429,26 +432,24 @@ def main():
     context.update({"overlays": overlays})
 
     # Load device file to extract EXCLUDED_TESTPLANS using Jinja2
-    device_file_path = os.path.join(args.testplan_device_path, args.device_type)
-    if os.path.exists(device_file_path):
-        try:
-            # Use Jinja2 to render the device template and extract variables
-            device_template = j2_env.get_template(args.device_type)
-            # Create a module from the template to access its namespace
-            device_module = device_template.make_module(context)
+    try:
+        # Use Jinja2 to render the device template and extract variables
+        device_template = j2_env.get_template(args.device_type)
+        # Create a module from the template to access its namespace
+        device_module = device_template.make_module(context)
 
-            # Extract EXCLUDED_TESTPLANS if it exists in the module
-            if hasattr(device_module, "EXCLUDED_TESTPLANS"):
-                context["EXCLUDED_TESTPLANS"] = device_module.EXCLUDED_TESTPLANS
-                logger.info(
-                    f"Found EXCLUDED_TESTPLANS in device file: {device_module.EXCLUDED_TESTPLANS}"
-                )
-        except TemplateNotFound as e:
-            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
-        except TemplateSyntaxError as e:
-            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
-        except UndefinedError as e:
-            logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+        # Extract EXCLUDED_TESTPLANS if it exists in the module
+        if hasattr(device_module, "EXCLUDED_TESTPLANS"):
+            context["EXCLUDED_TESTPLANS"] = device_module.EXCLUDED_TESTPLANS
+            logger.info(
+                f"Found EXCLUDED_TESTPLANS in device file: {device_module.EXCLUDED_TESTPLANS}"
+            )
+    except TemplateNotFound as e:
+        logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+    except TemplateSyntaxError as e:
+        logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
+    except UndefinedError as e:
+        logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
 
     test_list = []
     if args.test_plan:
