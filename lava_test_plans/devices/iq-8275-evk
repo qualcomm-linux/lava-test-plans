@@ -1,0 +1,12 @@
+{% set PROJECT = PROJECT|default("") %}
+{% extends PROJECT+"flasher.jinja2" %}
+
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@iq-8275-evk") %}
+{% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+
+{# Exclude camera testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
+
+{% set rootfs_label = 'rootfs' %}
+
+{% block device_type %}iq-8275-evk{% endblock %}

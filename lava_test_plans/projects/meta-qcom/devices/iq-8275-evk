@@ -1,0 +1,3 @@
+{% extends "devices/iq-8275-evk" %}
+
+{% set flasher_device_type = "iq-8275-evk" %}
