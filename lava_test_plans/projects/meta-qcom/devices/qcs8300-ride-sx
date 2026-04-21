@@ -1,3 +1,6 @@
 {% extends "devices/qcs8300-ride-sx" %}
 
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ['DSP_AudioPD'] %}
+
 {% set flasher_device_type = "qcs8300-ride-sx" %}
