@@ -1,0 +1,15 @@
+{% set PROJECT = PROJECT|default("") %}
+{% extends PROJECT+"flasher.jinja2" %}
+
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@glymur-crd") %}
+{% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+{% set ADDITIONAL_POSTPROCESS_STEPS = [
+     'echo "FIREHOSE_PROGRAM=xbl_s_devprg_ns.melf" >> $IMAGE_PATH/flash.settings',
+     'echo "STORAGE=nvme" >> $IMAGE_PATH/flash.settings'
+]%}
+
+{# Exclude camera testplan for this device #}
+
+{% set rootfs_label = 'rootfs' %}
+
+{% block device_type %}glymur-crd{% endblock %}
