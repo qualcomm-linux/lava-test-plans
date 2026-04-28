@@ -1,6 +1,17 @@
 {% extends "include/flasher.jinja2" %}
 
 {% set device_type = "debian-" + device_type %}
+{% set ADDITIONAL_POSTPROCESS_STEPS = ['echo "ROOTFS_IMAGE=disk-sdcard.img2" >> $IMAGE_PATH/flash.settings'] %}
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@debian") %}
+{% set AUTO_LOGIN_USERNAME = AUTO_LOGIN_USERNAME|default("debian") %}
+{% set AUTO_LOGIN_PASSWORD = AUTO_LOGIN_PASSWORD|default("debian") %}
+{% set AUTO_LOGIN_PASSWORD_PROMPT = AUTO_LOGIN_PASSWORD_PROMPT|default("Password") %}
+{% set image_file_name = image_file_name|default("flash-ufs.tar.gz") %}
+{# BUILD_DOWNLOAD_URL should end with a "/" #}
+{% set rootfs_url = BUILD_DOWNLOAD_URL + image_file_name %}
+
+{# add password change prompts #}
+{% set BOOT_OS_PROMPT = ["debian@debian", "root@debian", "Current password", "New password", "Retype new password"] %}
 
 {% block deploy_target %}
 {{ super() }}
@@ -14,5 +25,15 @@ metadata:
 {% endblock metadata %}
 
 {% block context %}
+  lava_test_results_dir: /home/lava-%s
   test_character_delay: 10
 {% endblock context %}
+
+{% block auto_login_commands %}
+      login_commands:
+        - "debian"
+        - "new password"
+        - "new password"
+        - sudo su
+{% endblock auto_login_commands %}
+
