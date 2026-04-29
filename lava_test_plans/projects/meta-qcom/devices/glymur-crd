@@ -1,0 +1,3 @@
+{% extends "devices/glymur-crd" %}
+
+{% set flasher_device_type = "glymur-crd" %}
