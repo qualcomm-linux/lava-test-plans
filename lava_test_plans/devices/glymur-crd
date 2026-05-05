@@ -8,8 +8,6 @@
      'echo "STORAGE=nvme" >> $IMAGE_PATH/flash.settings'
 ]%}
 
-{# Exclude camera testplan for this device #}
-
 {% set rootfs_label = 'rootfs' %}
 
 {% block device_type %}glymur-crd{% endblock %}
