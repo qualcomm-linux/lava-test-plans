@@ -1,3 +1,9 @@
 {% extends "devices/glymur-crd" %}
 
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'DSP_AudioPD', 'fastrpc_test'] %}
+
 {% set flasher_device_type = "glymur-crd" %}
+
+{# Exclude unsupported testplans for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-display-gfx.yaml', 'pre-merge-gstr-video.yaml'] %}

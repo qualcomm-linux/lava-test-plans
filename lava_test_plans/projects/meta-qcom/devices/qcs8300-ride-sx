@@ -5,6 +5,6 @@
 
 {% set flasher_device_type = "qcs8300-ride-sx" %}
 
-{# Exclude camera testplan for this device #}
+{# Exclude unsupported testplan for this device #}
 {% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
 

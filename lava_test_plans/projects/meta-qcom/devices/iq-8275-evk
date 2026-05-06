@@ -1,3 +1,6 @@
 {% extends "devices/iq-8275-evk" %}
 
 {% set flasher_device_type = "iq-8275-evk" %}
+
+{# Exclude unsupported testplans for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
