@@ -4,3 +4,6 @@
 {% set EXCLUDED_TESTS = ['fastrpc_test', 'DSP_AudioPD'] %}
 
 {% set flasher_device_type = "qcs615-ride" %}
+
+{# Exclude camera testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-bt.yaml'] %}
