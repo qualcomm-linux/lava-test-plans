@@ -19,29 +19,3 @@
     {"name": "AudioRecord_Config07", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config7", "RES_SUFFIX": "Config07", "LAVA_TESTCASE_ID": "AudioRecord_Config07"}, "expected": ["AudioRecord_Config07"]},
     {"name": "AudioRecord_Config09", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config9", "RES_SUFFIX": "Config09", "LAVA_TESTCASE_ID": "AudioRecord_Config09"}, "expected": ["AudioRecord_Config09"]}
 ] %}
-
-{% block test_target %}
-  {{ super() }}
-    {% for test in all_tests %}
-    {# Check if test should be included (not excluded AND condition met if specified) #}
-    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
-    - from: git
-      name: "{{ test.name }}"
-      path: {{ test.path }}
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      {% if test.params is defined %}
-      params:
-        {% for param_key, param_value in test.params.items() %}
-        {{ param_key }}: "{{ param_value }}"
-        {% endfor %}
-      {% endif %}
-      {% if test.expected is defined and test.expected %}
-      expected:
-        {% for expected in test.expected|default([]) %}
-        - {{ expected }}
-        {% endfor %}
-      {% endif %}
-
-    {% endif %}
-    {% endfor %}
-{% endblock test_target %}

@@ -18,3 +18,42 @@
   extra_kernel_args: '{{EXTRA_KERNEL_ARGS}}'
   {%- endif %}
 {% endblock context %}
+
+{% block test_target %}
+{% if all_tests is defined %}
+  {% for test in all_tests %}
+  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+  {{ super() }}
+  {# include the super block once if any tests are included #}
+  {% break %}
+  {% endif %}
+  {% endfor %}
+    {% for test in all_tests %}
+    {# Check if test should be included (not excluded AND condition met if specified) #}
+    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+    - from: git
+      name: "{{ test.name }}"
+      path: {{ test.path }}
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
+      revision: {{ TEST_DEFINITIONS_REVISION }}
+      {% endif %}
+      {% if test.params is defined %}
+      params:
+        {% for param_key, param_value in test.params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+      {% endif %}
+      {% if test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+
+    {% endif %}
+    {% endfor %}
+{% else %}
+  {{ super() }}
+{% endif %}
+{% endblock test_target %}
