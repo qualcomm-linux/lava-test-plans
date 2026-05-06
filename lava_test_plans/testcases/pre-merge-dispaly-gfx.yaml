@@ -10,9 +10,11 @@
 
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
-    {"name": "core_auth", "path": "Runner/suites/Multimedia/Display/igt-gpu-tools/core_auth/core_auth.yaml", "expected": ["core_auth"]},
-    {"name": "KMSCube", "path": "Runner/suites/Multimedia/Graphics/KMSCube/KMSCube.yaml", "expected": ["KMSCube"]},
+    {"name": "Weston_Runtime_Preflight", "path": "Runner/suites/Multimedia/Display/Weston_Runtime_Preflight/Weston_Runtime_Preflight.yaml", "expected": ["Weston_Runtime_Preflight"]},
+    {"name": "weston-simple-shm", "path": "Runner/suites/Multimedia/Graphics/weston-simple-shm/weston-simple-shm.yaml", "expected": ["weston-simple-shm"]},
     {"name": "weston-simple-egl", "path": "Runner/suites/Multimedia/Graphics/weston-simple-egl/weston-simple-egl.yaml", "expected": ["weston-simple-egl"]},
+    {"name": "KMSCube", "path": "Runner/suites/Multimedia/Graphics/KMSCube/KMSCube.yaml", "expected": ["KMSCube"]},
+    {"name": "core_auth", "path": "Runner/suites/Multimedia/Display/igt-gpu-tools/core_auth/core_auth.yaml", "expected": ["core_auth"]},
 ] %}
 
 {% block test_target %}
