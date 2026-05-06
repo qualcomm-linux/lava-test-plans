@@ -2,5 +2,5 @@
 
 {% set flasher_device_type = "iq-x7181-evk" %}
 
-{# Exclude camera testplan for this device #}
+{# Exclude unsupported testplan for this device #}
 {% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
