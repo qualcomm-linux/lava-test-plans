@@ -1,9 +1,9 @@
 {% extends "devices/qcs615-ride" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ['fastrpc_test', 'DSP_AudioPD'] %}
+{% set EXCLUDED_TESTS = ['fastrpc_test', 'DSP_AudioPD', 'AudioRecord', 'AudioPlayback', 'adsp_remoteproc'] %}
 
 {% set flasher_device_type = "qcs615-ride" %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-bt.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-bt.yaml', 'pre-merge-audio.yaml'] %}
