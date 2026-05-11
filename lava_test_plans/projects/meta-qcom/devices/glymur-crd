@@ -1,7 +1,7 @@
 {% extends "devices/glymur-crd" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'DSP_AudioPD', 'fastrpc_test', 'Ethernet'] %}
+{% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'DSP_AudioPD', 'fastrpc_test', 'Ethernet', 'EFI_Variable_Validation'] %}
 
 {% set flasher_device_type = "glymur-crd" %}
 

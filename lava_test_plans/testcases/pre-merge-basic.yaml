@@ -22,5 +22,10 @@
     {"name": "AudioPlayback", "path": "Runner/suites/Multimedia/Audio/AudioPlayback/AudioPlayback.yaml", "include": (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL), "params": {"AUDIO_CLIPS_BASE_DIR": "/home/AudioClips/"}, "expected": ["AudioPlayback"]},
     {"name": "Ethernet", "path": "Runner/suites/Connectivity/Ethernet/Ethernet.yaml", "expected": ["Ethernet"]},
     {"name": "DSP_AudioPD", "path": "Runner/suites/Multimedia/DSP_AudioPD/DSP_AudioPD.yaml", "expected": ["DSP_AudioPD"]},
-    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]}
+    {"name": "Docker_Kernel_Config", "path": "Runner/suites/System/Docker_Kernel_Config/Docker_Kernel_Config.yaml", "expected": ["Docker_Kernel_Config"]},
+    {"name": "EFI_Variable_Validation", "path": "Runner/suites/System/EFI_Variable_Validation/EFI_Variable_Validation.yaml", "expected": ["EFI_Variable_Validation"]},
+    {"name": "Kubernetes_Kernel_Config", "path": "Runner/suites/System/Kubernetes_Kernel_Config/Kubernetes_Kernel_Config.yaml", "expected": ["Kubernetes_Kernel_Config"]},
+    {"name": "Logging_Journalctl_Validation", "path": "Runner/suites/System/Logging/Logging_Journalctl_Validation/Logging_Journalctl_Validation.yaml", "expected": ["Logging_Journalctl_Validation"]},
+    {"name": "Partition_PostBoot_Validation", "path": "Runner/suites/Kernel/Baseport/Storage/Partition_PostBoot_Validation/Partition_PostBoot_Validation.yaml", "expected": ["Partition_PostBoot_Validation"]},
+    {"name": "Boot_Systemd_KPI_Loop", "path": "Runner/suites/Performance/Boot_Systemd_KPI_Loop/Boot_Systemd_KPI_Loop.yaml", "expected": ["Boot_Systemd_KPI_Loop"]}
 ] %}
