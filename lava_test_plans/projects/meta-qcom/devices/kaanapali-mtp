@@ -1,0 +1,9 @@
+{% extends "devices/kaanapali-mtp" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ['fastrpc_test', 'DSP_AudioPD', 'Ethernet', 'WiFi_OnOff', 'BT_ON_OFF', 'EFI_Variable_Validation'] %}
+
+{% set flasher_device_type = "kaanapali-mtp" %}
+
+{# Exclude unsupported testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-bt.yaml', 'pre-merge-camera.yaml', 'pre-merge-gstr-video.yaml'] %}
