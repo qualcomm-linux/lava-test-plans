@@ -1,0 +1,9 @@
+{% extends "devices/iq-x5121-evk" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ['EFI_Variable_Validation'] %}
+
+{% set flasher_device_type = "iq-x5121-evk" %}
+
+{# Exclude unsupported testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
