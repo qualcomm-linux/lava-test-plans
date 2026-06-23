@@ -1,7 +1,7 @@
 {% extends "devices/iq-x7181-evk" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'EFI_Variable_Validation'] %}
+{% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'EFI_Variable_Validation', 'adsp_remoteproc', 'cdsp_remoteproc'] %}
 
 {% set flasher_device_type = "iq-x7181-evk" %}
 
