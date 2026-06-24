@@ -2,6 +2,8 @@ name: Run tests
 
 on: [push, pull_request]
 
+env:
+  TEST_LAVA_VALIDITY_CONTAINER: ghcr.io/linux-validation/lava/lava-server-amd64:2026.05-qualcomm-2026.05-20-01117a204
 jobs:
   build:
     runs-on: ubuntu-latest
