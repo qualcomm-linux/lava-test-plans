@@ -1,0 +1,19 @@
+{% extends "include/qdl.jinja2" %}
+
+{% block deploy_target %}
+{{ super() }}
+{% endblock deploy_target %}
+
+{% block metadata %}
+metadata:
+  path: projects/meta-qcom/
+{% if OS_INFO %}
+{% include PROJECT+"include/meta-qcom-"+OS_INFO+"-metadata.jinja2" %}
+{% else %}
+{% include PROJECT+"include/meta-qcom-metadata.jinja2" %}
+{% endif %}
+{% endblock metadata %}
+
+{% block context %}
+  test_character_delay: 10
+{% endblock context %}

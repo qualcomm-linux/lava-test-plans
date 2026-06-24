@@ -1,17 +1,14 @@
 {% set PROJECT = PROJECT|default("") %}
 {% extends PROJECT+"qdl.jinja2" %}
 
-{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@qcs615-ride") %}
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@sm8750-mtp") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+
+{# qdl deployment - device specific flashing parameters #}
+{% set firehose_program = firehose_program|default("xbl_s_devprg_ns.melf") %}
+{% set rawprogram = rawprogram|default("rawprogram0.xml rawprogram1.xml rawprogram2.xml rawprogram3.xml rawprogram4.xml rawprogram5.xml") %}
+{% set patch = patch|default("patch0.xml patch1.xml patch2.xml patch3.xml patch4.xml patch5.xml") %}
 
 {% set rootfs_label = 'rootfs' %}
 
-{# qdl deployment - device specific flashing parameters #}
-{% set firehose_program = firehose_program|default("prog_firehose_ddr.elf") %}
-{% set rawprogram = rawprogram|default("rawprogram0.xml rawprogram1.xml rawprogram2.xml rawprogram3.xml rawprogram4.xml rawprogram5.xml") %}
-{% set patch = patch|default("patch0.xml patch1.xml patch2.xml patch3.xml patch4.xml patch5.xml") %}
-{% set qdl_stages = qdl_stages|default([
-    {"storage": "ufs", "path": "", "rawprogram": rawprogram, "patch": patch}
-]) %}
-
-{% block device_type %}qcs615-ride{% endblock %}
+{% block device_type %}sm8750-mtp{% endblock %}
