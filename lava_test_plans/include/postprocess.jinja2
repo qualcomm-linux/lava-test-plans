@@ -10,7 +10,7 @@
         - tar -czf overlay.tar.gz -C overlay_root .
 {% endif %}
         - echo "OVERLAY=overlay.tar.gz" >> $IMAGE_PATH/flash.settings
-        - echo "OVERLAY_PATH=/home/" >> $IMAGE_PATH/flash.settings
+        - echo "OVERLAY_PATH=/" >> $IMAGE_PATH/flash.settings
 {% endif %}
         - echo "DEVICE_TYPE={{flasher_device_type}}" >> $IMAGE_PATH/flash.settings
 {% if ADDITIONAL_POSTPROCESS_STEPS is defined and ADDITIONAL_POSTPROCESS_STEPS is sequence %}
