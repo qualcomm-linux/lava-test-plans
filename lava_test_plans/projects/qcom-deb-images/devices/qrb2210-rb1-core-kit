@@ -1,1 +1,1 @@
-{% extends "devices/qrb2210-rb1-core-kit" %}
+{% extends "devices/qrb2210-rb1" %}

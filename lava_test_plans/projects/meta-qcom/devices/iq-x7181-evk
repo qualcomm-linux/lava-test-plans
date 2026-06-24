@@ -1,9 +1,7 @@
-{% extends "devices/iq-x7181-evk" %}
+{% extends "devices/hamoa-iot-evk" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'EFI_Variable_Validation'] %}
-
-{% set flasher_device_type = "iq-x7181-evk" %}
 
 {# Exclude unsupported testplan for this device #}
 {% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}

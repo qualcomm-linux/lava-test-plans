@@ -1,6 +1,4 @@
-{% extends "devices/rb3gen2-core-kit" %}
+{% extends "devices/qcs6490-rb3gen2" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ["Ethernet"] %}
-
-{% set flasher_device_type = "qcs6490" %}

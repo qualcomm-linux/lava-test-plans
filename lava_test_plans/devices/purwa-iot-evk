@@ -1,7 +1,7 @@
 {% set PROJECT = PROJECT|default("") %}
 {% extends PROJECT+"qdl.jinja2" %}
 
-{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@glymur-crd") %}
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@purwa-iot-evk") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
 
 {# qdl deployment - device specific flashing parameters #}
@@ -15,4 +15,4 @@
 
 {% set rootfs_label = 'rootfs' %}
 
-{% block device_type %}glymur-crd{% endblock %}
+{% block device_type %}purwa-iot-evk{% endblock %}
