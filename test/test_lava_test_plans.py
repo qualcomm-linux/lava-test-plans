@@ -14,6 +14,12 @@ test_lava_validity = (
     "" if os.getenv("SKIP_TEST_LAVA_VALIDITY") else "--test-lava-validity"
 )
 
+test_lava_validity_container = (
+    "--test-lava-validity-container %s" % os.getenv("TEST_LAVA_VALIDITY_CONTAINER")
+    if os.getenv("TEST_LAVA_VALIDITY_CONTAINER")
+    else ""
+)
+
 # all Linux tests all devices
 devices = [os.path.basename(d) for d in glob.glob("lava_test_plans/devices/*")]
 testcases = [
@@ -70,7 +76,7 @@ for device in meta_qcom_devices:
 def test_call_lava_test_plan_testplans_project_meta_qcom(param):
     variable_input_file, device, testplan, project_device_path = param
     sys.argv = shlex.split(
-        f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity}'
+        f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity} {test_lava_validity_container}'
     )
     assert main() == 0
 
@@ -102,7 +108,7 @@ for device in qcom_deb_images_devices:
 def test_call_lava_test_plan_testplans_project_qcom_deb_images(param):
     variable_input_file, device, testplan, project_device_path = param
     sys.argv = shlex.split(
-        f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity}'
+        f'lava_test_plans --dry-run --variables "{variable_input_file}" --testplan-device-path "{project_device_path}" --device-type "{device}" --test-plan "{testplan}" {test_lava_validity} {test_lava_validity_container}'
     )
     assert main() == 0
 
