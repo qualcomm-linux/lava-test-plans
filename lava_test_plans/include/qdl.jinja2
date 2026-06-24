@@ -1,0 +1,84 @@
+{% extends "master.jinja2" %}
+
+{% set use_context = true %}
+{% set IMAGE_FILE_NAME = IMAGE_FILE_NAME|default("rootfs.tar.gz") %}
+{% set boot_method = boot_method|default("minimal") %}
+{% set auto_login = auto_login|default(true) %}
+{% set use_download_headers = use_download_headers|default(false) %}
+
+{# qdl deployment defaults - devices may override the per-device values below #}
+{# qdl_image_dir is the directory the qcomflash archive unpacks to, derived #}
+{# from IMAGE_FILE_NAME by stripping the .rootfs.qcomflash.tar.gz suffix.    #}
+{% set qdl_image_dir = qdl_image_dir|default(IMAGE_FILE_NAME|replace(".rootfs.qcomflash.tar.gz", "")) %}
+{% set qdl_rootfs_image = qdl_rootfs_image|default(qdl_image_dir + "/rootfs.img") %}
+{% set overlay_path = overlay_path|default("/home") %}
+{% set apply_overlay = apply_overlay|default(true) %}
+
+{# firehose_program / rawprogram / patch are device specific and are expected #}
+{# to be set in the device file. Defaults are provided as a fallback only.     #}
+{% set firehose_program = firehose_program|default("xbl_s_devprg_ns.melf") %}
+{% set rawprogram = rawprogram|default("rawprogram0.xml") %}
+{% set patch = patch|default("patch0.xml") %}
+{% set qdl_debug = qdl_debug|default(true) %}
+
+{# multistage flashing: ordered list of stages, each flashed via a qdl boot. #}
+{# "path" is appended to qdl_image_dir; an empty path uses qdl_image_dir.     #}
+{% set qdl_stages = qdl_stages|default([
+    {"storage": "ufs", "path": "", "rawprogram": rawprogram, "patch": patch}
+]) %}
+
+{# timeouts #}
+{% set qdl_deploy_timeout = qdl_deploy_timeout|default(20) %}
+{% set qdl_boot_timeout = qdl_boot_timeout|default(15) %}
+
+{# Feed the qdl action timeouts into the job timeout computed by master.jinja2 #}
+{# (deploy + one boot per flashing stage) so no action can exceed the job.     #}
+{% set target_deploy_timeout = qdl_deploy_timeout %}
+{% set TARGET_BOOT_TIMEOUT = qdl_boot_timeout * (qdl_stages|length) %}
+
+{% block actions %}
+{% block deploy_target %}
+- deploy:
+    rootfs_image: "{{ qdl_rootfs_image }}"
+    overlay_path: "{{ overlay_path }}"
+    qcomflash:
+{% if use_download_headers %}
+      headers:
+        {{ AUTH_HEADER_NAME }}: {{ AUTH_HEADER_TOKEN }}
+{% endif %}
+      url: '{{ ROOTFS_URL }}'
+      apply-overlay: {{ apply_overlay | lower }}
+    timeout:
+      minutes: {{ qdl_deploy_timeout }}
+    to: qdl
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% for stage in qdl_stages %}
+- boot:
+    firehose_program: "{{ firehose_program }}"
+    rawprogram: "{{ stage.rawprogram }}"
+    patch: "{{ stage.patch }}"
+    path: "{{ qdl_image_dir }}{% if stage.path %}/{{ stage.path }}{% endif %}"
+    storage: "{{ stage.storage }}"
+    debug: {{ qdl_debug | lower }}
+    timeout:
+      minutes: {{ qdl_boot_timeout }}
+    method: qdl
+{% endfor %}
+- boot:
+{% block boot_commands %}
+{% endblock boot_commands %}
+{% if auto_login == true %}
+{% include "include/boot_target/auto_login.jinja2" %}
+{% block auto_login_commands %}
+{% include "include/boot_target/auto_login_commands.jinja2" %}
+{% endblock auto_login_commands %}
+{% endif %}
+{% include "include/boot_target/boot_target.jinja2" %}
+
+{% endblock boot_target %}
+
+{{ super() }}
+
+{% endblock actions %}

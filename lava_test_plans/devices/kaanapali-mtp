@@ -1,12 +1,14 @@
 {% set PROJECT = PROJECT|default("") %}
-{% extends PROJECT+"flasher.jinja2" %}
+{% extends PROJECT+"qdl.jinja2" %}
 
 {% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@kaanapali-mtp") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
-{% set ADDITIONAL_POSTPROCESS_STEPS = [
-     'echo "FIREHOSE_PROGRAM=qsahara_device_programmer.xml" >> $IMAGE_PATH/flash.settings'
-]%}
 
 {% set rootfs_label = 'rootfs' %}
+
+{# qdl deployment - device specific flashing parameters #}
+{% set firehose_program = firehose_program|default("qsahara_device_programmer.xml") %}
+{% set rawprogram = rawprogram|default("rawprogram0.xml rawprogram1.xml rawprogram2.xml rawprogram3.xml rawprogram4.xml rawprogram5.xml") %}
+{% set patch = patch|default("patch0.xml patch1.xml patch2.xml patch3.xml patch4.xml patch5.xml") %}
 
 {% block device_type %}kaanapali-mtp{% endblock %}
