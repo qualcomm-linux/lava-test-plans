@@ -313,6 +313,12 @@ def main():
         dest="test_lava_validity",
     )
     parser.add_argument(
+        "--test-lava-validity-container",
+        help="""LAVA container used for testing generated job file validity""",
+        default="lavasoftware/lava-server:latest",
+        dest="test_lava_validity_container",
+    )
+    parser.add_argument(
         "--verbose",
         help="""Verbosity level. Follows logging levels:
                           CRITICAL: 50
@@ -543,7 +549,7 @@ def main():
             logger.debug(testpath)
             logger.debug(test)
             container = client.containers.run(
-                image="lavasoftware/lava-server:latest",
+                image=args.test_lava_validity_container,
                 command="/usr/share/lava-common/lava-schema.py job /data/%s" % test,
                 volumes={"%s" % testpath: {"bind": "/data", "mode": "rw"}},
                 detach=True,
