@@ -1,0 +1,10 @@
+{% set PROJECT = PROJECT|default("") %}
+{% extends PROJECT+"flasher.jinja2" %}
+
+{% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+
+{% set rootfs_label = 'rootfs' %}
+
+{% set flasher_device_type = "debian-monaco-arduino-monza_emmc" %}
+
+{% block device_type %}ventunoq{% endblock %}
