@@ -1,5 +1,8 @@
 {% extends "devices/qcs9100-ride-sx" %}
 
+{# Use QDL deployment for this device #}
+{% set deploy_method_template = "qdl.jinja2" %}
+
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ['DSP_AudioPD', 'AudioRecord', 'AudioPlayback', 'adsp_remoteproc'] %}
 

@@ -1,7 +1,7 @@
 {% set PROJECT = PROJECT|default("") %}
 {% extends PROJECT+"qdl.jinja2" %}
 
-{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@glymur-crd") %}
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@monaco-arduino-monza") %}
 {% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
 
 {# qdl deployment - device specific flashing parameters #}
@@ -10,9 +10,9 @@
 {% set patch = patch|default("patch0.xml") %}
 {% set qdl_stages = qdl_stages|default([
     {"storage": "spinor", "path": "spinor", "rawprogram": rawprogram, "patch": patch},
-    {"storage": "nvme", "path": "", "rawprogram": rawprogram, "patch": patch}
+    {"storage": "emmc", "path": "", "rawprogram": rawprogram, "patch": patch}
 ]) %}
 
 {% set rootfs_label = 'rootfs' %}
 
-{% block device_type %}glymur-crd{% endblock %}
+{% block device_type %}monaco-arduino-monza{% endblock %}

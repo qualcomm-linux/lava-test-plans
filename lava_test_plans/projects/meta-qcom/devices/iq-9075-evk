@@ -1,3 +1,1 @@
-{% extends "devices/iq-9075-evk" %}
-
-{% set flasher_device_type = "iq-9075-evk" %}
+{% extends "devices/lemans-evk" %}
