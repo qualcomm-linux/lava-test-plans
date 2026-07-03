@@ -1,0 +1,12 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{% set test_name = "pre-merge-perf" %}
+{% set test_timeout = 10 %}
+
+{# Get excluded tests list from device file #}
+{% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+
+{# Define all tests with their details and pre-evaluate conditions #}
+{% set all_tests = [
+    {"name": "Boot_Systemd_Validate", "path": "Runner/suites/Performance/Boot_Systemd_Validate/Boot_Systemd_Validate.yaml", "expected": ["Boot_Systemd_Validate"]}
+] %}
