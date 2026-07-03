@@ -17,5 +17,6 @@
     {"name": "AudioRecord_Config03", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config3", "RES_SUFFIX": "Config03", "LAVA_TESTCASE_ID": "AudioRecord_Config03"}, "expected": ["AudioRecord_Config03"]},
     {"name": "AudioRecord_Config05", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config5", "RES_SUFFIX": "Config05", "LAVA_TESTCASE_ID": "AudioRecord_Config05"}, "expected": ["AudioRecord_Config05"]},
     {"name": "AudioRecord_Config07", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config7", "RES_SUFFIX": "Config07", "LAVA_TESTCASE_ID": "AudioRecord_Config07"}, "expected": ["AudioRecord_Config07"]},
-    {"name": "AudioRecord_Config09", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config9", "RES_SUFFIX": "Config09", "LAVA_TESTCASE_ID": "AudioRecord_Config09"}, "expected": ["AudioRecord_Config09"]}
+    {"name": "AudioRecord_Config09", "path": "Runner/suites/Multimedia/Audio/AudioRecord/AudioRecord.yaml", "params": {"CONFIG_NAMES": "record_config9", "RES_SUFFIX": "Config09", "LAVA_TESTCASE_ID": "AudioRecord_Config09"}, "expected": ["AudioRecord_Config09"]},
+    {"name": "Audio_Record_Playback", "path": "Runner/suites/Multimedia/GSTreamer/Audio/Audio_Record_Playback/Audio_Record_Playback.yaml", "expected": ["Audio_Record_Playback"]}
 ] %}
