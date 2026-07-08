@@ -1,0 +1,9 @@
+{% extends "include/qdl.jinja2" %}
+
+{% block deploy_target %}
+{{ super() }}
+{% endblock deploy_target %}
+
+{% block context %}
+  test_character_delay: 10
+{% endblock context %}
