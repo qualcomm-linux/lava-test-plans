@@ -15,5 +15,6 @@
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
     {"name": "Libcamera_cam", "path": "Runner/suites/Multimedia/Camera/Libcamera_cam/Libcamera_cam.yaml", "expected": ["Libcamera_cam"]},
-    {"name": "Camera_RDI_FrameCapture", "path": "Runner/suites/Multimedia/Camera/Camera_RDI_FrameCapture/Camera_RDI_FrameCapture.yaml", "expected": ["Camera_RDI_FrameCapture"]}
+    {"name": "Camera_RDI_FrameCapture", "path": "Runner/suites/Multimedia/Camera/Camera_RDI_FrameCapture/Camera_RDI_FrameCapture.yaml", "expected": ["Camera_RDI_FrameCapture"]},
+    {"name": "Camera_Tests", "path": "Runner/suites/Multimedia/GSTreamer/Camera/Camera_Tests/Camera_Tests.yaml", "expected": ["Camera_Tests"]}
 ] %}
