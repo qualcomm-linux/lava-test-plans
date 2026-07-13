@@ -23,7 +23,6 @@ jobs:
          python -m pip install --upgrade pip
          pip install black
          pip install flit
-         pip install tuxpkg
          pip install py
          pip install pytest==8.4.2
          pip install pytest-cov
