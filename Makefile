@@ -1,7 +1,75 @@
 all: typecheck test style flake8
 
 export PROJECT := lava-test-plans
+export MODULE := lava_test_plans
 #export NUM_WORKERS ?= $(shell nproc)
-export TUXPKG_MIN_COVERAGE ?= 57
+export MIN_COVERAGE ?= 57
 
-include $(shell tuxpkg get-makefile)
+version ?= $(shell sed -e '/^__version__/ !d; s/"\s*$$//; s/.*"//' $(MODULE)/__init__.py)
+
+ifneq ($(NUM_WORKERS),)
+WORKERS = --workers=$(NUM_WORKERS)
+endif
+
+CLEAN = dist run
+
+.PHONY: all test style flake8 typecheck dist rpm rpmsrc deb debsrc clean
+
+test:
+	python3 -m pytest $(WORKERS) --cov=$(MODULE) --cov-report=term-missing --cov-report=html --cov-report=xml:coverage.xml --cov-fail-under=$(MIN_COVERAGE) $(PYTEST_OPTIONS)
+
+style:
+	black --check --diff $(BLACK_OPTIONS) .
+
+flake8:
+	flake8 --exclude=dist/ --ignore=E501,W503 $(FLAKE8_OPTIONS) .
+
+typecheck:
+	mypy --exclude=dist/ $(MYPY_OPTIONS) .
+
+run:
+	echo "#!/bin/sh" > $@
+	echo "set -eu" >> $@
+	echo 'realfile="$$(readlink -f "$$0")"' >> $@
+	echo 'export PYTHONPATH="$$(dirname "$$realfile")"' >> $@
+	echo 'exec python3 -m $(MODULE) "$$@"' >> $@
+	chmod +x $@
+
+dist: dist/$(PROJECT)-$(version).tar.gz
+
+dist/$(PROJECT)-$(version).tar.gz:
+	flit build
+	find dist/ -type f
+	if [ ! -f $@ ]; then git archive --prefix=$(PROJECT)-$(version)/ --output=$@ HEAD; fi
+
+rpmsrc: dist dist/$(PROJECT).spec
+
+dist/$(PROJECT).spec: $(PROJECT).spec
+	cp $(PROJECT).spec dist/
+
+RPMBUILD = rpmbuild
+rpm: dist/$(PROJECT)-$(version)-0$(MODULE).noarch.rpm
+
+dist/$(PROJECT)-$(version)-0$(MODULE).noarch.rpm: dist/$(PROJECT)-$(version).tar.gz dist/$(PROJECT).spec
+	cd dist && \
+	$(RPMBUILD) -ta --define "dist $(MODULE)" --define "_rpmdir $$(pwd)" $(PROJECT)-$(version).tar.gz
+	mv $(patsubst dist/%, dist/noarch/%, $@) $@
+	rmdir dist/noarch
+
+debsrc: dist dist/$(PROJECT)_$(version)-1.dsc dist/$(PROJECT)_$(version).orig.tar.gz
+
+deb: debsrc dist/$(PROJECT)_$(version)-1_all.deb
+
+dist/$(PROJECT)_$(version).orig.tar.gz: dist/$(PROJECT)-$(version).tar.gz
+	ln -f $< $@
+
+dist/$(PROJECT)_$(version)-1.dsc: dist/$(PROJECT)_$(version).orig.tar.gz $(wildcard debian/*)
+	cd dist && tar xaf $(PROJECT)_$(version).orig.tar.gz
+	cp -r debian/ dist/$(PROJECT)-$(version)
+	cd dist/$(PROJECT)-$(version)/ && dpkg-buildpackage -S -d -us -uc
+
+dist/$(PROJECT)_$(version)-1_all.deb: dist/$(PROJECT)_$(version)-1.dsc
+	cd dist/$(PROJECT)-$(version) && dpkg-buildpackage -b -us -uc
+
+clean:
+	$(RM) -r $(CLEAN)
