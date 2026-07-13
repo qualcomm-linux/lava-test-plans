@@ -1,4 +1,13 @@
 [run]
 source = lava_test_plans
-omit = lava_test_plans/devices/*
-       lava_test_plans/*/*/devices/*
+# Jinja2 compiles every template with co_filename set to the template's path,
+# so coverage traces the templates as if they were Python source. Recent
+# coverage releases ast.parse() each reported file, which blows up on Jinja
+# syntax. All real Python lives at the top level of the package; everything
+# below is templates.
+omit = lava_test_plans/*.jinja2
+       lava_test_plans/devices/*
+       lava_test_plans/include/*
+       lava_test_plans/projects/*
+       lava_test_plans/testcases/*
+       lava_test_plans/testplans/*
