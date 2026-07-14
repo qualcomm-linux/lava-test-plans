@@ -1,0 +1,3 @@
+{% extends "devices/sm8750-mtp" %}
+
+{% set flasher_device_type = "sm8750-mtp" %}
