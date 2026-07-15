@@ -1,3 +1,0 @@
-{% extends "devices/shikra-iqs-evk" %}
-
-{% set flasher_device_type = "shikra-iqs-evk" %}
