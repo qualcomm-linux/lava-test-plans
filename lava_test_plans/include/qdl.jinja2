@@ -11,7 +11,6 @@
 {# from IMAGE_FILE_NAME by stripping the .rootfs.qcomflash.tar.gz suffix.    #}
 {% set qdl_image_dir = qdl_image_dir|default(IMAGE_FILE_NAME|replace(".rootfs.qcomflash.tar.gz", "")) %}
 {% set qdl_rootfs_image = qdl_rootfs_image|default(qdl_image_dir + "/rootfs.img") %}
-{% set overlay_path = overlay_path|default("/home") %}
 {% set apply_overlay = apply_overlay|default(true) %}
 
 {# firehose_program / rawprogram / patch are device specific and are expected #}
@@ -40,7 +39,6 @@
 {% block deploy_target %}
 - deploy:
     rootfs_image: "{{ qdl_rootfs_image }}"
-    overlay_path: "{{ overlay_path }}"
     qcomflash:
 {% if use_download_headers %}
       headers:
