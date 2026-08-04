@@ -8,7 +8,6 @@
 
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
-    {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml", "expected": ["hotplug"]},
     {"name": "CPUFreq_Validation", "path": "Runner/suites/Kernel/Baseport/CPUFreq_Validation/CPUFreq_Validation.yaml", "expected": ["CPUFreq_Validation"]},
     {"name": "Interrupts", "path": "Runner/suites/Kernel/Baseport/Interrupts/Interrupts.yaml", "expected": ["Interrupts"]},
     {"name": "cdsp_remoteproc", "path": "Runner/suites/Kernel/Baseport/cdsp_remoteproc/cdsp_remoteproc.yaml", "expected": ["cdsp_remoteproc"]},
@@ -27,5 +26,6 @@
     {"name": "Kubernetes_Kernel_Config", "path": "Runner/suites/System/Kubernetes_Kernel_Config/Kubernetes_Kernel_Config.yaml", "expected": ["Kubernetes_Kernel_Config"]},
     {"name": "Logging_Journalctl_Validation", "path": "Runner/suites/System/Logging/Logging_Journalctl_Validation/Logging_Journalctl_Validation.yaml", "expected": ["Logging_Journalctl_Validation"]},
     {"name": "Partition_PostBoot_Validation", "path": "Runner/suites/Kernel/Baseport/Storage/Partition_PostBoot_Validation/Partition_PostBoot_Validation.yaml", "expected": ["Partition_PostBoot_Validation"]},
-    {"name": "Boot_Systemd_KPI_Loop", "path": "Runner/suites/Performance/Boot_Systemd_KPI_Loop/Boot_Systemd_KPI_Loop.yaml", "expected": ["Boot_Systemd_KPI_Loop"]}
+    {"name": "Boot_Systemd_KPI_Loop", "path": "Runner/suites/Performance/Boot_Systemd_KPI_Loop/Boot_Systemd_KPI_Loop.yaml", "expected": ["Boot_Systemd_KPI_Loop"]},
+    {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml", "expected": ["hotplug"]}
 ] %}
