@@ -1,0 +1,32 @@
+        steps:
+        - export IMAGE_IN=qcomflash/{{ IMAGE_FILE_NAME }}
+        - export IMAGE_OUT={{ qdl_overlay_image_name }}
+        - export ROOTFS={{ qdl_rootfs_image }}
+        - apt-get update -qq && apt-get install -y -qq pigz
+        - mkdir flash
+        - tar -xf "$IMAGE_IN" -C flash
+{% for name, url, dst in qdl_overlays %}
+{% set basename = url.split('?')[0].split('#')[0].split('/')[-1] %}
+{% set dest = dst.rstrip('/') %}
+{% set redirect = ">" if loop.first else ">>" %}
+{# create each component of the destination - an arbitrary path is not         #}
+{# guaranteed to exist in the image. debugfs reports "already exists" for the  #}
+{# ones that do, which is harmless.                                            #}
+{% set ns = namespace(acc='', mkdirs='') %}
+{% for part in dest.strip('/').split('/') if part %}
+{% set ns.acc = ns.acc + '/' + part %}
+{% set ns.mkdirs = ns.mkdirs + 'mkdir "' + ns.acc + '"\\n' %}
+{% endfor %}
+{% if compression(basename)[0] == "file" %}
+        - printf '{{ ns.mkdirs }}lcd %s\n' "$PWD/{{ name }}" {{ redirect }} debugfs.cmds
+        - printf 'rm "%s"\nwrite "%s" "%s"\n' "{{ dest }}/{{ basename }}" "{{ basename }}" "{{ dest }}/{{ basename }}" >> debugfs.cmds
+{% else %}
+        - mkdir {{ name }}.d
+        - tar -xf {{ name }}/{{ basename }} -C {{ name }}.d
+        - printf '{{ ns.mkdirs }}lcd %s\n' "$PWD/{{ name }}.d" {{ redirect }} debugfs.cmds
+        - ( cd {{ name }}.d && find . -mindepth 1 -type d -printf "mkdir \"{{ dest }}/%P\"\n" ) >> debugfs.cmds
+        - ( cd {{ name }}.d && find . -type f -printf "write \"%P\" \"{{ dest }}/%P\"\n" ) >> debugfs.cmds
+{% endif %}
+{% endfor %}
+        - debugfs -w -f debugfs.cmds "flash/$ROOTFS"
+        - tar -Scf - -C flash . | pigz -1 > "$IMAGE_OUT"
