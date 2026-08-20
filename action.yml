@@ -7,6 +7,20 @@ inputs:
   machines:
     description: "Comma separated list of machines (LAVA device types)"
     required: true
+  ref:
+    description: >
+      Revision of lava-test-plans to render with: a commit, tag or branch. The
+      tool and the test plans ship in the same package, so this selects both.
+      Defaults to the revision this action was resolved to, which is the usual
+      way to pin it.
+    required: false
+    default: ""
+  repository:
+    description: >
+      Repository the revision named by `ref` is installed from. Only used when
+      `ref` is set. Override to render with a fork.
+    required: false
+    default: "qualcomm-linux/lava-test-plans"
   distro_name:
     description: >
       Name of the distro including kernel suffix. When set, the build URL
@@ -130,11 +144,22 @@ runs:
 
       - name: Install lava-test-plans
         shell: bash
+        env:
+          INPUTS_REF: ${{ inputs.ref }}
+          INPUTS_REPOSITORY: ${{ inputs.repository }}
         run: |
           set -euo pipefail
-          # The action lives in the root of the lava-test-plans repository, so
-          # the version of the tool is the one the action was pinned to.
-          pip install "${GITHUB_ACTION_PATH}"
+          if [ -n "${INPUTS_REF}" ]; then
+            # The caller asked for a specific revision. Install it from git so
+            # the workflow does not have to check this repository out itself
+            # just to reach the action that lives in it.
+            pip install "git+${GITHUB_SERVER_URL}/${INPUTS_REPOSITORY}@${INPUTS_REF}"
+          else
+            # The action lives in the root of the lava-test-plans repository, so
+            # by default the version of the tool is the one the action was
+            # pinned to.
+            pip install "${GITHUB_ACTION_PATH}"
+          fi
           lava-test-plans --version
 
       - name: 'Download build URLs'

@@ -61,6 +61,27 @@ the templates need:
             ROOTFS_URL=${{ needs.build.outputs.build_url }}/%MACHINE%/qcom-multimedia-image-%MACHINE%.rootfs.qcomflash.tar.gz
 ```
 
+## Selecting a revision
+
+By default the action installs itself - it lives in the root of this repository, so
+`uses: qualcomm-linux/lava-test-plans@<ref>` pins the tool, the projects and the test
+plans in one go. This is the recommended way to pin it.
+
+A workflow that has to choose the revision at run time cannot do it through `uses:`,
+because `uses:` does not accept expressions. Pass `ref` instead: the action is then
+resolved at its own pinned revision, and installs the revision you asked for from git.
+
+```yaml
+      - uses: qualcomm-linux/lava-test-plans@v1
+        with:
+          machines: rb3gen2-core-kit
+          ref: ${{ inputs.lava_test_plans_ref }}
+```
+
+The tool and the test plans ship in the same package, so `ref` moves both together;
+there is no way for them to disagree. Add `repository` to install from a fork. Checking
+this repository out in the calling workflow is never necessary.
+
 ## Build URLs
 
 With `build_id` set, the action downloads the `build-url_<machine>_<distro_name>`
@@ -77,6 +98,8 @@ Without `build_id`, the `build_url` input is used for all machines.
 | Input | Required | Default | Description |
 | --- | --- | --- | --- |
 | `machines` | yes | | Comma separated list of machines. One set of jobs is rendered per machine, using `projects/<project>/devices/<machine>` as the device type. |
+| `ref` | no | the revision the action was resolved to | Revision of lava-test-plans to render with. Selects the tool and the test plans together. See [Selecting a revision](#selecting-a-revision). |
+| `repository` | no | `qualcomm-linux/lava-test-plans` | Repository `ref` is installed from. Only used when `ref` is set. |
 | `distro_name` | no | | Name of the distro including kernel suffix. Selects the build URL artifacts and drives the image name, the rootfs URL and the artifact name. |
 | `build_id` | no | | ID of the workflow run the build URL artifacts are downloaded from. |
 | `gh_token` | no | | Token used to download the build URL artifacts. Required when `build_id` is set. |
