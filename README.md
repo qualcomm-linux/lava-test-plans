@@ -72,5 +72,21 @@ Overall job timeout is a sum of action timeouts. There are 6 components:
 
 When LXC is not in use all *lxc_* timeouts are set to 0. *test_timeout* is defined for each test template. *target_* timeouts can be set separately for each device.
 
+# GitHub action
+
+This repository provides a reusable composite action that renders test jobs in
+a GitHub workflow and returns them as a job matrix:
+
+    - uses: qualcomm-linux/lava-test-plans@master
+      with:
+        machines: rb3gen2-core-kit,qcs9100-ride-sx
+        distro_name: qcom-distro-6.16
+        build_id: ${{ needs.build.outputs.run_id }}
+        gh_token: ${{ secrets.GITHUB_TOKEN }}
+        project: meta-qcom
+        testplan: qcom-distro/pre-merge
+
+See [ACTION.md](ACTION.md) for the full list of inputs and outputs.
+
 # Repository
 Pull requests are welcome to https://github.com/qualcomm-linux/lava-test-plans.
