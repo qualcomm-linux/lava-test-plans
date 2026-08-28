@@ -4,4 +4,4 @@
 {% set EXCLUDED_TESTS = ['fastrpc_test', 'WiFi_Firmware_Driver', 'WiFi_OnOff', 'EFI_Variable_Validation', 'adsp_remoteproc', 'cdsp_remoteproc'] %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-kvm.yaml'] %}

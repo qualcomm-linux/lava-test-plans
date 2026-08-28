@@ -9,5 +9,5 @@
 {% set flasher_device_type = "qcs9100-ride-sx" %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-audio.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-audio.yaml', 'pre-merge-kvm.yaml'] %}
 

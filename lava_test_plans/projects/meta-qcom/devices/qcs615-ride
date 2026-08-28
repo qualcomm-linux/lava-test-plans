@@ -4,4 +4,4 @@
 {% set EXCLUDED_TESTS = ['DSP_AudioPD', 'AudioRecord', 'AudioPlayback', 'adsp_remoteproc'] %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-bt.yaml', 'pre-merge-audio.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-bt.yaml', 'pre-merge-audio.yaml', 'pre-merge-kvm.yaml'] %}

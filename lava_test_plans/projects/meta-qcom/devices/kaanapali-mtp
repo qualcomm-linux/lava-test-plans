@@ -4,4 +4,4 @@
 {% set EXCLUDED_TESTS = ['DSP_AudioPD', 'Ethernet', 'WiFi_OnOff', 'BT_ON_OFF', 'EFI_Variable_Validation'] %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-bt.yaml', 'pre-merge-camera.yaml', 'pre-merge-gstr-video.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-bt.yaml', 'pre-merge-camera.yaml', 'pre-merge-gstr-video.yaml', 'pre-merge-kvm.yaml'] %}

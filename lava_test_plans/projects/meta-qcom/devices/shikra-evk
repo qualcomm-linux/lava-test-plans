@@ -6,4 +6,4 @@
 {% set flasher_device_type = "qcs" %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-display-gfx.yaml', 'pre-merge-gstr-video.yaml', 'pre-merge-audio.yaml', 'pre-merge-camera.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-display-gfx.yaml', 'pre-merge-gstr-video.yaml', 'pre-merge-audio.yaml', 'pre-merge-camera.yaml', 'pre-merge-kvm.yaml'] %}

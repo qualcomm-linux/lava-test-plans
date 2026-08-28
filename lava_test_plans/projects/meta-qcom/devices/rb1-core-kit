@@ -4,4 +4,4 @@
 {% set EXCLUDED_TESTS = ['AudioRecord', 'AudioPlayback', 'EFI_Variable_Validation', 'cdsp_remoteproc', 'DSP_AudioPD', 'fastrpc_test'] %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = ['pre-merge-audio.yaml', 'pre-merge-camera.yaml'] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-audio.yaml', 'pre-merge-camera.yaml', 'pre-merge-kvm.yaml'] %}
