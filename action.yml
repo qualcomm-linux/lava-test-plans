@@ -1,0 +1,382 @@
+name: Run lava-test-plans
+description: >
+  Render LAVA test job definitions with lava-test-plans and expose them as a
+  job matrix (and, optionally, as a workflow artifact).
+
+inputs:
+  machines:
+    description: "Comma separated list of machines (LAVA device types)"
+    required: true
+  ref:
+    description: >
+      Revision of lava-test-plans to render with: a commit, tag or branch. The
+      tool and the test plans ship in the same package, so this selects both.
+      Defaults to the revision this action was resolved to, which is the usual
+      way to pin it.
+    required: false
+    default: ""
+  repository:
+    description: >
+      Repository the revision named by `ref` is installed from. Only used when
+      `ref` is set. Override to render with a fork.
+    required: false
+    default: "qualcomm-linux/lava-test-plans"
+  distro_name:
+    description: >
+      Name of the distro including kernel suffix. When set, the build URL
+      artifacts, the image name and the rootfs URL are derived from it.
+    required: false
+    default: ""
+  build_id:
+    description: >
+      ID of the workflow run from which the build URL files are downloaded.
+      When set, BUILD_URL is read from the build-url_<machine>_<distro_name>
+      artifacts of that run instead of the build_url input.
+    required: false
+    default: ""
+  gh_token:
+    description: "Github token. It's required to download artifacts from the workflow"
+    required: false
+    default: ""
+  build_url:
+    description: >
+      URL of the build the test jobs are created for. Used for all machines when
+      build_id is not set. Sets BUILD_URL and BUILD_DOWNLOAD_URL.
+    required: false
+    default: ""
+  kernel:
+    description: "Kernel suffix appended to the distro name in BUILD_OS"
+    required: false
+    default: ""
+  image_type:
+    description: >
+      Image type used to build the image and rootfs file names. Defaults to
+      qcom-multimedia-image for qcom-distro builds and core-image-base otherwise.
+    required: false
+    default: ""
+  project:
+    description: "Project name used in the lava-test-plans call. Defaults to the calling repository name"
+    required: false
+    default: ""
+  testplan:
+    description: "Test plan path relative to the project directory, e.g. 'boot' or 'qcom-distro/pre-merge'"
+    required: false
+    default: boot
+  prefix:
+    description: "Prefix for the artifact and for the result file names in the job matrix"
+    required: false
+    default: testjobs
+  variables:
+    description: >
+      Additional variables in KEY=VALUE form, one per line. They are appended to
+      the generated variables file, so they overwrite the defaults set by this
+      action. The token %MACHINE% is replaced with the name of the machine the
+      job is rendered for.
+    required: false
+    default: ""
+  variables_files:
+    description: >
+      Space or newline separated list of existing variable files (ini or yaml)
+      passed to lava-test-plans before the generated one. Paths are relative to
+      the workspace unless absolute.
+    required: false
+    default: ""
+  os_info:
+    description: "Value of the OS_INFO variable, used in the test job name"
+    required: false
+    default: ""
+  lava_job_priority:
+    description: "Priority of the generated LAVA jobs"
+    required: false
+    default: "50"
+  test_definitions_repository:
+    description: "Repository with test definitions used by the rendered jobs"
+    required: false
+    default: "https://github.com/qualcomm-linux/qcom-linux-testkit/"
+  testkit_ref:
+    description: "Revision of the test definitions repository. Can be a tag, branch or commit SHA"
+    required: false
+    default: ""
+  pr_number:
+    description: "Pull request number. When set, it is added to the LAVA job metadata as PR_NUMBER"
+    required: false
+    default: ""
+  pr_url:
+    description: "Pull request URL. When set, it is added to the LAVA job metadata as PR_URL"
+    required: false
+    default: ""
+  validity_container:
+    description: >
+      When set, rendered jobs are validated with the LAVA validator using this
+      container image. Requires docker on the runner.
+    required: false
+    default: ""
+  fail_on_error:
+    description: "Fail the action when rendering of any test plan fails or when BUILD_URL is missing"
+    required: false
+    default: "true"
+  upload_artifact:
+    description: "Upload the rendered test jobs as a workflow artifact"
+    required: false
+    default: "true"
+  python_version:
+    description: "Python version used to install and run lava-test-plans"
+    required: false
+    default: "3.11"
+
+outputs:
+  jobmatrix:
+    description: Job matrix composed from generated LAVA test job files
+    value: ${{ steps.lava-test-plans.outputs.jobmatrix }}
+  jobs_path:
+    description: Path to the directory containing the rendered test jobs
+    value: ${{ steps.lava-test-plans.outputs.jobs_path }}
+  artifact_id:
+    description: "ID of the uploaded artifact containing rendered test jobs"
+    value: ${{ steps.upload-test-plans.outputs.artifact-id }}
+
+runs:
+  using: "composite"
+  steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install lava-test-plans
+        shell: bash
+        env:
+          INPUTS_REF: ${{ inputs.ref }}
+          INPUTS_REPOSITORY: ${{ inputs.repository }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUTS_REF}" ]; then
+            # The caller asked for a specific revision. Install it from git so
+            # the workflow does not have to check this repository out itself
+            # just to reach the action that lives in it.
+            pip install "git+${GITHUB_SERVER_URL}/${INPUTS_REPOSITORY}@${INPUTS_REF}"
+          else
+            # The action lives in the root of the lava-test-plans repository, so
+            # by default the version of the tool is the one the action was
+            # pinned to.
+            pip install "${GITHUB_ACTION_PATH}"
+          fi
+          lava-test-plans --version
+
+      - name: 'Download build URLs'
+        if: ${{ inputs.build_id != '' }}
+        uses: actions/download-artifact@v7
+        with:
+          github-token: ${{ inputs.gh_token }}
+          run-id: ${{ inputs.build_id }}
+          pattern: build-url_*_${{ inputs.distro_name }}
+
+      - name: Run lava-test-plans
+        id: lava-test-plans
+        shell: bash
+        env:
+          INPUTS_MACHINES: ${{ inputs.machines }}
+          INPUTS_DISTRO_NAME: ${{ inputs.distro_name }}
+          INPUTS_BUILD_ID: ${{ inputs.build_id }}
+          INPUTS_BUILD_URL: ${{ inputs.build_url }}
+          INPUTS_KERNEL: ${{ inputs.kernel }}
+          INPUTS_IMAGE_TYPE: ${{ inputs.image_type }}
+          INPUTS_PROJECT: ${{ inputs.project }}
+          INPUTS_TESTPLAN: ${{ inputs.testplan }}
+          INPUTS_PREFIX: ${{ inputs.prefix }}
+          INPUTS_VARIABLES: ${{ inputs.variables }}
+          INPUTS_VARIABLES_FILES: ${{ inputs.variables_files }}
+          INPUTS_OS_INFO: ${{ inputs.os_info }}
+          INPUTS_LAVA_JOB_PRIORITY: ${{ inputs.lava_job_priority }}
+          INPUTS_TEST_DEFINITIONS_REPOSITORY: ${{ inputs.test_definitions_repository }}
+          INPUTS_TESTKIT_REF: ${{ inputs.testkit_ref }}
+          INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
+          INPUTS_PR_URL: ${{ inputs.pr_url }}
+          INPUTS_VALIDITY_CONTAINER: ${{ inputs.validity_container }}
+          INPUTS_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
+        run: |
+          set -euo pipefail
+
+          OUT_PATH="${GITHUB_WORKSPACE}/out"
+          VARS_OUT_PATH="${OUT_PATH}/vars"
+          JOBS_OUT_PATH="${OUT_PATH}/jobs"
+          mkdir -p "${VARS_OUT_PATH}" "${JOBS_OUT_PATH}"
+          echo "jobs_path=${JOBS_OUT_PATH}" >> "${GITHUB_OUTPUT}"
+
+          PROJECT="${INPUTS_PROJECT}"
+          if [ -z "${PROJECT}" ]; then
+            PROJECT="${GITHUB_REPOSITORY#*/}"
+          fi
+          # suffix used in artifact, job path and result file names
+          SUFFIX=""
+          if [ -n "${INPUTS_DISTRO_NAME}" ]; then
+            SUFFIX="-${INPUTS_DISTRO_NAME}"
+          fi
+
+          COMMON_VARS="${VARS_OUT_PATH}/gh-variables.ini"
+          {
+            echo "PROJECT_NAME=${PROJECT}"
+            echo "PROJECT=projects/${PROJECT}/"
+            echo "LAVA_JOB_PRIORITY=${INPUTS_LAVA_JOB_PRIORITY}"
+            echo "BUILD_NUMBER=${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+            echo "TEST_DEFINITIONS_REPOSITORY=${INPUTS_TEST_DEFINITIONS_REPOSITORY}"
+            echo "GITHUB_WORKFLOW_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "GITHUB_WORKFLOW_RUN_ID=${GITHUB_RUN_ID}"
+            echo "GITHUB_WORKFLOW_RUN_ATTEMPT=${GITHUB_RUN_ATTEMPT}"
+          } > "${COMMON_VARS}"
+          if [ -n "${INPUTS_OS_INFO}" ]; then
+            echo "OS_INFO=${INPUTS_OS_INFO}" >> "${COMMON_VARS}"
+          fi
+          if [ -n "${INPUTS_TESTKIT_REF}" ]; then
+            echo "TEST_DEFINITIONS_REVISION=${INPUTS_TESTKIT_REF}" >> "${COMMON_VARS}"
+          fi
+          # For pull request builds, record the PR number and URL so they end up
+          # in the LAVA job metadata section. Left unset for push/nightly builds.
+          if [ -n "${INPUTS_PR_NUMBER}" ]; then
+            echo "PR_NUMBER=${INPUTS_PR_NUMBER}" >> "${COMMON_VARS}"
+          fi
+          if [ -n "${INPUTS_PR_URL}" ]; then
+            echo "PR_URL=${INPUTS_PR_URL}" >> "${COMMON_VARS}"
+          fi
+
+          IMAGE_TYPE="${INPUTS_IMAGE_TYPE}"
+          if [ -z "${IMAGE_TYPE}" ]; then
+            IMAGE_TYPE="core-image-base"
+            case "${INPUTS_DISTRO_NAME}" in
+              "qcom-distro"*)
+                IMAGE_TYPE="qcom-multimedia-image"
+                echo "AUTO_LOGIN_PASSWORD_PROMPT=Password" >> "${COMMON_VARS}"
+                echo "AUTO_LOGIN_PASSWORD=oelinux123" >> "${COMMON_VARS}"
+                ;;
+            esac
+          fi
+
+          # Variable files provided by the caller are passed before the
+          # generated one, so that the generated values take precedence.
+          VARIABLES_FILES=()
+          for VARS_FILE in ${INPUTS_VARIABLES_FILES}; do
+            case "${VARS_FILE}" in
+              /*) ;;
+              *) VARS_FILE="${GITHUB_WORKSPACE}/${VARS_FILE}" ;;
+            esac
+            if [ ! -f "${VARS_FILE}" ]; then
+              echo "Variables file ${VARS_FILE} does not exist"
+              exit 1
+            fi
+            VARIABLES_FILES+=("${VARS_FILE}")
+          done
+
+          EXTRA_ARGS=()
+          if [ -n "${INPUTS_VALIDITY_CONTAINER}" ]; then
+            EXTRA_ARGS+=(--test-lava-validity --test-lava-validity-container "${INPUTS_VALIDITY_CONTAINER}")
+          fi
+
+          RESULT_JSON='{"target": []}'
+          FAILED=0
+          for MACHINE in ${INPUTS_MACHINES//,/ }; do
+            echo "Rendering test job templates for ${MACHINE}"
+            MACHINE_VARS="${VARS_OUT_PATH}/${MACHINE}.ini"
+            cp "${COMMON_VARS}" "${MACHINE_VARS}"
+            echo "DEVICE_TYPE=${MACHINE}" >> "${MACHINE_VARS}"
+
+            BUILD_URL="${INPUTS_BUILD_URL}"
+            if [ -n "${INPUTS_BUILD_ID}" ]; then
+              # dir name and file name are the same as we're downloading multiple files
+              BUILD_URL_MACHINE="${MACHINE}"
+              case "${MACHINE}" in
+                dragonboard-410c|dragonboard-820c)
+                  BUILD_URL_MACHINE="qcom-armv8a"
+                  ;;
+              esac
+              BUILD_URL_FILE="${GITHUB_WORKSPACE}/build-url_${BUILD_URL_MACHINE}_${INPUTS_DISTRO_NAME}/build-url_${BUILD_URL_MACHINE}_${INPUTS_DISTRO_NAME}"
+              echo "${BUILD_URL_FILE}"
+              BUILD_URL=""
+              if [ -f "${BUILD_URL_FILE}" ]; then
+                BUILD_URL=$(cat "${BUILD_URL_FILE}")
+              fi
+            fi
+            if [ -z "${BUILD_URL}" ]; then
+              # at this point the variable should be filled in
+              echo "::error::BUILD_URL missing for ${MACHINE}"
+              FAILED=1
+              continue
+            fi
+            echo "BUILD_URL=${BUILD_URL}" >> "${MACHINE_VARS}"
+            echo "BUILD_DOWNLOAD_URL=${BUILD_URL%/}/" >> "${MACHINE_VARS}"
+
+            if [ -n "${INPUTS_DISTRO_NAME}" ]; then
+              echo "IMAGE_FILE_NAME=${IMAGE_TYPE}-${MACHINE}.rootfs.qcomflash.tar.gz" >> "${MACHINE_VARS}"
+              echo "ROOTFS_URL=${BUILD_URL%/}/${INPUTS_DISTRO_NAME}/${MACHINE}/${IMAGE_TYPE}-${MACHINE}.rootfs.qcomflash.tar.gz" >> "${MACHINE_VARS}"
+              case "${MACHINE}" in
+                dragonboard-410c)
+                  echo "ROOTFS_IMG_FILE=${IMAGE_TYPE}-qcom-armv8a.rootfs.ext4" >> "${MACHINE_VARS}"
+                  echo "BOOT_IMG_FILE=boot-apq8016-sbc-qcom-armv8a.img" >> "${MACHINE_VARS}"
+                  echo "BUILD_OS=${INPUTS_DISTRO_NAME}${INPUTS_KERNEL}/" >> "${MACHINE_VARS}"
+                  ;;
+                dragonboard-820c)
+                  echo "ROOTFS_IMG_FILE=${IMAGE_TYPE}-qcom-armv8a.rootfs.ext4" >> "${MACHINE_VARS}"
+                  echo "BOOT_IMG_FILE=boot-apq8096-db820c-qcom-armv8a.img" >> "${MACHINE_VARS}"
+                  echo "BUILD_OS=${INPUTS_DISTRO_NAME}${INPUTS_KERNEL}/" >> "${MACHINE_VARS}"
+                  ;;
+              esac
+            fi
+
+            # Caller supplied variables come last, so they overwrite everything above
+            if [ -n "${INPUTS_VARIABLES}" ]; then
+              echo "${INPUTS_VARIABLES//%MACHINE%/${MACHINE}}" >> "${MACHINE_VARS}"
+            fi
+            cat "${MACHINE_VARS}"
+
+            MACHINE_JOBS_PATH="${JOBS_OUT_PATH}/${MACHINE}${SUFFIX}-${INPUTS_TESTPLAN//\//-}"
+            if ! lava-test-plans --dry-run \
+                --variables ${VARIABLES_FILES[@]+"${VARIABLES_FILES[@]}"} "${MACHINE_VARS}" \
+                --test-plan "${PROJECT}/${INPUTS_TESTPLAN}" \
+                --device-type "projects/${PROJECT}/devices/${MACHINE}" \
+                --dry-run-path "${MACHINE_JOBS_PATH}" \
+                ${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}; then
+              echo "::error::Rendering test jobs for ${MACHINE} failed"
+              FAILED=1
+              continue
+            fi
+
+            # create the JSON file that is used for the job submission matrix
+            if [ ! -d "${MACHINE_JOBS_PATH}" ]; then
+              continue
+            fi
+            while read -r JOB_PATH; do
+              echo "Processing ${JOB_PATH}"
+              FILENAME=$(basename "${JOB_PATH}")
+              RESULT_NAME="${INPUTS_PREFIX}${SUFFIX}-${MACHINE}-${FILENAME}"
+              RELATIVE_JOB_PATH=$(realpath -s --relative-to "${JOBS_OUT_PATH}" "${JOB_PATH}")
+              RESULT_JSON=$(echo "${RESULT_JSON}" | jq -c \
+                --arg path "${RELATIVE_JOB_PATH}" \
+                --arg artifact "${INPUTS_PREFIX}${SUFFIX}" \
+                --arg result_file "${RESULT_NAME}" \
+                --arg name "${MACHINE}" \
+                '.target += [$ARGS.named]')
+            done < <(find "${MACHINE_JOBS_PATH}" -name "*.yaml")
+          done
+
+          echo "${RESULT_JSON}"
+          echo "jobmatrix=${RESULT_JSON}" >> "${GITHUB_OUTPUT}"
+          if [ "$(echo "${RESULT_JSON}" | jq '.target | length')" -eq 0 ]; then
+            echo "::warning::No test jobs were generated"
+            echo "generated=false" >> "${GITHUB_OUTPUT}"
+          else
+            echo "generated=true" >> "${GITHUB_OUTPUT}"
+          fi
+          if [ "${FAILED}" -ne 0 ] && [ "${INPUTS_FAIL_ON_ERROR}" = "true" ]; then
+            exit 1
+          fi
+
+      - name: 'Upload test jobs'
+        # only run upload if any test job was generated
+        if: ${{ inputs.upload_artifact == 'true' && steps.lava-test-plans.outputs.generated == 'true' }}
+        id: upload-test-plans
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ inputs.distro_name != '' && format('{0}-{1}', inputs.prefix, inputs.distro_name) || inputs.prefix }}
+          # Upload the directory rather than a glob. With a glob the artifact
+          # root is the least common ancestor of the matched files, which for a
+          # single machine collapses to its job directory and breaks the paths
+          # reported in `jobmatrix`.
+          path: ${{ steps.lava-test-plans.outputs.jobs_path }}
