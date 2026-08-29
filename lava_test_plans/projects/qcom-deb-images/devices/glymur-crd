@@ -1,0 +1,4 @@
+{% extends "devices/glymur-crd" %}
+
+{% set flasher_device_type = "debian-glymur-crd-emmc" %}
+{% set image_file_name = "flash-emmc.tar.gz" %}
