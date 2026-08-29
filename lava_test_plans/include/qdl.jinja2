@@ -13,6 +13,16 @@
 {% set qdl_rootfs_image = qdl_rootfs_image|default(qdl_image_dir + "/rootfs.img") %}
 {% set apply_overlay = apply_overlay|default(true) %}
 
+{% set qdl_overlays = (overlays|default([], true)|list)
+   + ([("over", OVERLAY_URL, OVERLAY_PATH|default("/"))]
+      if (OVERLAY_URL is defined and OVERLAY_URL) else [])
+   + ([("audioclips", AUDIO_CLIPS_URL, AUDIO_CLIPS_OVERLAY_PATH|default("/home"))]
+      if (AUDIO_CLIPS_URL is defined and AUDIO_CLIPS_URL) else []) %}
+{% set qdl_overlay_image_name = "overlay-" + IMAGE_FILE_NAME %}
+{% set overlay_use_download_headers = overlay_use_download_headers|default(use_download_headers) %}
+{% set DOCKER_IMAGE_POSTPROCESS = DOCKER_IMAGE_POSTPROCESS|default("ghcr.io/foundriesio/lava-lmp-sign:main") %}
+{% set DOCKER_IMAGE_POSTPROCESS_LOCAL = DOCKER_IMAGE_POSTPROCESS_LOCAL|default(true) %}
+
 {# firehose_program / rawprogram / patch are device specific and are expected #}
 {# to be set in the device file. Defaults are provided as a fallback only.     #}
 {% set firehose_program = firehose_program|default("xbl_s_devprg_ns.melf") %}
@@ -37,14 +47,50 @@
 
 {% block actions %}
 {% block deploy_target %}
+{% if qdl_overlays %}
+- deploy:
+    timeout:
+      minutes: {{ target_downloads_timeout }}
+    to: downloads
+{# uniquify stores each artifact under its own image key, so overlays whose  #}
+{# URLs share a basename cannot overwrite each other.                        #}
+    uniquify: true
+    images:
+      qcomflash:
+        url: '{{ ROOTFS_URL }}'
+{% if use_download_headers %}
+        headers:
+          {{ AUTH_HEADER_NAME }}: {{ AUTH_HEADER_TOKEN }}
+{% endif %}
+{% for name, url, dst in qdl_overlays %}
+      {{ name }}:
+        url: '{{ url }}'
+{% if overlay_use_download_headers %}
+        headers:
+          {{ AUTH_HEADER_NAME }}: {{ AUTH_HEADER_TOKEN }}
+{% endif %}
+{% endfor %}
+    postprocess:
+      docker:
+        image: {{ DOCKER_IMAGE_POSTPROCESS }}
+{% if DOCKER_IMAGE_POSTPROCESS_LOCAL %}
+        local: true
+{% endif %}
+{% include "include/qdl-postprocess.jinja2" %}
+{% endif %}
 - deploy:
     rootfs_image: "{{ qdl_rootfs_image }}"
     qcomflash:
-{% if use_download_headers %}
+{% if use_download_headers and not qdl_overlays %}
       headers:
         {{ AUTH_HEADER_NAME }}: {{ AUTH_HEADER_TOKEN }}
 {% endif %}
+{% if qdl_overlays %}
+{# the patched tarball is hardlinked out of the downloads dir, not re-fetched #}
+      url: 'downloads://{{ qdl_overlay_image_name }}'
+{% else %}
       url: '{{ ROOTFS_URL }}'
+{% endif %}
       apply-overlay: {{ apply_overlay | lower }}
     timeout:
       minutes: {{ qdl_deploy_timeout }}
