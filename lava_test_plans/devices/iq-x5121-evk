@@ -1,0 +1,12 @@
+{% set PROJECT = PROJECT|default("") %}
+{% extends PROJECT+"flasher.jinja2" %}
+
+{% set BOOT_OS_PROMPT = BOOT_OS_PROMPT|default("root@iq-x5121-evk") %}
+{% set ROOTFS_URL_COMP = ROOTFS_URL_COMP|default("gz") %}
+{% set ADDITIONAL_POSTPROCESS_STEPS = [
+     'echo "FIREHOSE_PROGRAM=xbl_s_devprg_ns.melf" >> $IMAGE_PATH/flash.settings'
+]%}
+
+{% set rootfs_label = 'rootfs' %}
+
+{% block device_type %}iq-x5121-evk{% endblock %}
