@@ -5,11 +5,13 @@
 {% set boot_timeout = boot_timeout|default(5) %}
 {% set install_fastboot_timeout = install_fastboot_timeout|default(10) %}
 {# fastboot_deploy_timeout is for 'to: fastboot' targets only #}
-{% set fastboot_deploy_timeout = fastboot_deploy_timeout|default(0) %}
-{% set target_downloads_timeout = target_deploy_timeout|default(5) %}
-{% set target_deploy_timeout = target_deploy_timeout|default(12) %}
+{% set fastboot_deploy_timeout = fastboot_deploy_timeout|default(0)|int %}
+{# a child template may already have set target_downloads_timeout; #}
+{# |default() only fires when undefined, so an explicit 0 survives. #}
+{% set target_downloads_timeout = target_downloads_timeout|default(target_deploy_timeout|default(5))|int %}
+{% set target_deploy_timeout = target_deploy_timeout|default(12)|int %}
 {% set TARGET_BOOT_TIMEOUT = TARGET_BOOT_TIMEOUT|default(2)|int %}
-{% set test_timeout = test_timeout|default(0) %}
+{% set test_timeout = test_timeout|default(0)|int %}
 {% set TEST_DEFINITIONS_REPOSITORY = TEST_DEFINITIONS_REPOSITORY|default("https://github.com/Linaro/test-definitions.git") %}
 
 {# if AUTH_HEADER_NAME and AUTH_HEADER_TOKEN are set, populate use_download_headers #}
