@@ -40,6 +40,7 @@ from lava_test_plans.utils import (
     compression,
     get_context,
     overlay_action,
+    resolve_git_revision,
     validate_variables,
     generate_audio_clips_url,
 )
@@ -433,6 +434,17 @@ def main():
             logger.warning(
                 "Failed to generate audio clips URL. Audio tests may not work correctly."
             )
+
+    # A branch moves and a tag can be recreated, so the tarball url has to
+    # name a sha or the cache would keep serving the first one it saw.
+    # Without a sha the definitions fall back to a git clone.
+    testdef_repository = context.get("TEST_DEFINITIONS_REPOSITORY") or ""
+    if testdef_repository.startswith(("https://github.com/", "http://github.com/")):
+        requested = context.get("TEST_DEFINITIONS_REVISION")
+        sha = resolve_git_revision(testdef_repository, requested)
+        if sha:
+            context["TEST_DEFINITIONS_REVISION_SHA"] = sha
+            logger.info(f"{testdef_repository} {requested or 'HEAD'} is {sha}")
 
     context.update({"device_type": args.device_type})
     context.update({"overlays": overlays})

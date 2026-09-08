@@ -11,6 +11,7 @@ import subprocess
 from unittest.mock import patch, MagicMock, mock_open
 from lava_test_plans.utils import (
     generate_audio_clips_url,
+    resolve_git_revision,
     get_context,
     validate_variables,
     overlay_action,
@@ -284,3 +285,94 @@ class TestCompression:
     def test_compression_unknown(self):
         """Test compression detection for unknown file types"""
         assert compression("file.unknown") == (None, None)
+
+
+class TestResolveGitRevision:
+    """Test cases for resolve_git_revision function"""
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_sha_is_returned_unchanged(self, mock_run):
+        """A sha is already immutable, so no remote lookup is needed"""
+        sha = "010afe5f667c8f876d450c856996ba09aa0353b9"
+
+        assert resolve_git_revision("https://github.com/org/repo", sha) == sha
+        mock_run.assert_not_called()
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_head_is_resolved_when_no_revision_given(self, mock_run):
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="6c620eb14590433d7c99d8da13f38715e8fc6143\tHEAD\n"
+        )
+
+        assert (
+            resolve_git_revision("https://github.com/org/repo")
+            == "6c620eb14590433d7c99d8da13f38715e8fc6143"
+        )
+        assert mock_run.call_args[0][0][-1] == "HEAD"
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_annotated_tag_resolves_to_its_commit(self, mock_run):
+        """refs/tags/x is the tag object; refs/tags/x^{} is the commit"""
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=(
+                "b64e2d8ac95d87ecf317ff4a7fb8143a4179cdef\trefs/tags/t\n"
+                "010afe5f667c8f876d450c856996ba09aa0353b9\trefs/tags/t^{}\n"
+            ),
+        )
+
+        assert (
+            resolve_git_revision("https://github.com/org/repo", "t")
+            == "010afe5f667c8f876d450c856996ba09aa0353b9"
+        )
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_lightweight_ref_resolves_to_its_only_sha(self, mock_run):
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout="6c620eb14590433d7c99d8da13f38715e8fc6143\trefs/heads/main\n",
+        )
+
+        assert (
+            resolve_git_revision("https://github.com/org/repo", "main")
+            == "6c620eb14590433d7c99d8da13f38715e8fc6143"
+        )
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_lines_that_are_not_a_ref_are_ignored(self, mock_run):
+        """git may print warnings alongside the refs"""
+        mock_run.return_value = MagicMock(
+            returncode=0,
+            stdout=(
+                "warning: redirecting to https://github.com/org/repo/\n"
+                "6c620eb14590433d7c99d8da13f38715e8fc6143\trefs/heads/main\n"
+            ),
+        )
+
+        assert (
+            resolve_git_revision("https://github.com/org/repo", "main")
+            == "6c620eb14590433d7c99d8da13f38715e8fc6143"
+        )
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_unknown_revision_returns_none(self, mock_run):
+        mock_run.return_value = MagicMock(returncode=0, stdout="")
+
+        assert resolve_git_revision("https://github.com/org/repo", "nope") is None
+
+    @patch("lava_test_plans.utils.subprocess.run")
+    def test_unreadable_remote_returns_none(self, mock_run):
+        """A remote that cannot be read must not raise"""
+        mock_run.return_value = MagicMock(
+            returncode=128, stdout="", stderr="remote: Repository not found."
+        )
+
+        assert resolve_git_revision("https://github.com/org/nope") is None
+
+    @patch(
+        "lava_test_plans.utils.subprocess.run",
+        side_effect=subprocess.TimeoutExpired("git", 30),
+    )
+    def test_timeout_returns_none(self, mock_run):
+        """A hung remote must not hang job generation"""
+        assert resolve_git_revision("https://github.com/org/repo") is None

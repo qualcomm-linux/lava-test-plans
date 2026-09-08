@@ -10,11 +10,52 @@
 import os
 import argparse
 import logging
+import re
 import subprocess
 from configobj import ConfigObj, ConfigObjError
 from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
+
+
+def resolve_git_revision(repository, revision=None):
+    """Resolve a revision to the commit sha it points at.
+
+    A tarball url is only cacheable while it names something immutable. A
+    branch moves, and a tag can be recreated, so both are resolved to the
+    commit a clone would have checked out. A sha is already immutable.
+    """
+    if revision and re.fullmatch(r"[0-9a-f]{40}", revision):
+        return revision
+    refs = [revision, "refs/tags/%s^{}" % revision] if revision else ["HEAD"]
+    try:
+        result = subprocess.run(
+            ["git", "ls-remote", repository] + refs,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        logger.warning(f"Unable to resolve {revision or 'HEAD'} in {repository}: {exc}")
+        return None
+    if result.returncode != 0:
+        logger.warning(
+            f"Unable to resolve {revision or 'HEAD'} in {repository}: "
+            f"{result.stderr.strip()}"
+        )
+        return None
+    sha = None
+    for line in result.stdout.splitlines():
+        fields = line.split()
+        if len(fields) != 2:
+            continue
+        # an annotated tag reports the tag object and, as ^{}, its commit
+        if fields[1].endswith("^{}"):
+            return fields[0]
+        sha = sha or fields[0]
+    if sha is None:
+        logger.warning(f"{revision or 'HEAD'} does not exist in {repository}")
+    return sha
 
 
 def generate_audio_clips_url():
