@@ -117,6 +117,9 @@ Without `build_id`, the `build_url` input is used for all machines.
 | `testkit_ref` | no | | Revision of the test definitions repository (tag, branch or commit SHA). |
 | `pr_number` | no | | Added to the LAVA job metadata as `PR_NUMBER`. |
 | `pr_url` | no | | Added to the LAVA job metadata as `PR_URL`. |
+| `source_sha` | no | | Commit of the calling repository the build under test was made from. Added to the LAVA job metadata as `SOURCE_SHA`. |
+| `source_branch` | no | | Branch that commit came from. Added to the LAVA job metadata as `SOURCE_BRANCH`. |
+| `build_type` | no | | Kind of build under test, for example `PR`, `PUSH`, `NIGHTLY` or `WEEKLY`. Added to the LAVA job metadata as `BUILD_TYPE`. |
 | `validity_container` | no | | When set, rendered jobs are validated with the LAVA validator using this container image. Requires docker on the runner. |
 | `fail_on_error` | no | `true` | Fail the action when rendering fails or a build URL is missing for any machine. |
 | `upload_artifact` | no | `true` | Upload the rendered jobs as a workflow artifact. |

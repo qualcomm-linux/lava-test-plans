@@ -105,6 +105,24 @@ inputs:
     description: "Pull request URL. When set, it is added to the LAVA job metadata as PR_URL"
     required: false
     default: ""
+  source_sha:
+    description: >
+      Commit of the calling repository the build under test was made from.
+      Added to the LAVA job metadata as SOURCE_SHA.
+    required: false
+    default: ""
+  source_branch:
+    description: >
+      Branch that commit came from. Added to the LAVA job metadata as
+      SOURCE_BRANCH.
+    required: false
+    default: ""
+  build_type:
+    description: >
+      Kind of build under test, for example PR, PUSH, NIGHTLY or WEEKLY. Added
+      to the LAVA job metadata as BUILD_TYPE.
+    required: false
+    default: ""
   validity_container:
     description: >
       When set, rendered jobs are validated with the LAVA validator using this
@@ -191,6 +209,9 @@ runs:
           INPUTS_TESTKIT_REF: ${{ inputs.testkit_ref }}
           INPUTS_PR_NUMBER: ${{ inputs.pr_number }}
           INPUTS_PR_URL: ${{ inputs.pr_url }}
+          INPUTS_SOURCE_SHA: ${{ inputs.source_sha }}
+          INPUTS_SOURCE_BRANCH: ${{ inputs.source_branch }}
+          INPUTS_BUILD_TYPE: ${{ inputs.build_type }}
           INPUTS_VALIDITY_CONTAINER: ${{ inputs.validity_container }}
           INPUTS_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
         run: |
@@ -212,6 +233,14 @@ runs:
             SUFFIX="-${INPUTS_DISTRO_NAME}"
           fi
 
+          # The kernel suffix is written as a distro suffix ("_linux-qcom-6.18").
+          # An empty one is the distro default: name it rather than leaving the
+          # key empty, so those builds can be selected by it too.
+          BUILD_KERNEL="${INPUTS_KERNEL#_}"
+          # With no explicit ref the action renders with the revision it was
+          # itself resolved to, which is what GITHUB_ACTION_REF names.
+          LAVA_TEST_PLANS_REF="${INPUTS_REF:-${GITHUB_ACTION_REF:-}}"
+
           COMMON_VARS="${VARS_OUT_PATH}/gh-variables.ini"
           {
             echo "PROJECT_NAME=${PROJECT}"
@@ -222,6 +251,19 @@ runs:
             echo "GITHUB_WORKFLOW_URL=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo "GITHUB_WORKFLOW_RUN_ID=${GITHUB_RUN_ID}"
             echo "GITHUB_WORKFLOW_RUN_ATTEMPT=${GITHUB_RUN_ATTEMPT}"
+            # Provenance of the build under test. LAVA keeps the job metadata in
+            # an indexed JSON field and exposes it as a query filter, so these
+            # are the keys a job gets selected by: which commit it came from and
+            # which configuration it was built with.
+            echo "BUILD_TYPE=${INPUTS_BUILD_TYPE}"
+            echo "BUILD_RUN_ID=${INPUTS_BUILD_ID}"
+            echo "BUILD_DISTRO=${INPUTS_DISTRO_NAME}"
+            echo "BUILD_KERNEL=${BUILD_KERNEL:-default}"
+            echo "SOURCE_REPO=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+            echo "SOURCE_BRANCH=${INPUTS_SOURCE_BRANCH}"
+            echo "SOURCE_SHA=${INPUTS_SOURCE_SHA}"
+            echo "TESTPLAN_NAME=${INPUTS_TESTPLAN}"
+            echo "LAVA_TEST_PLANS_REF=${LAVA_TEST_PLANS_REF}"
           } > "${COMMON_VARS}"
           if [ -n "${INPUTS_OS_INFO}" ]; then
             echo "OS_INFO=${INPUTS_OS_INFO}" >> "${COMMON_VARS}"
@@ -249,6 +291,7 @@ runs:
                 ;;
             esac
           fi
+          echo "BUILD_IMAGE=${IMAGE_TYPE}" >> "${COMMON_VARS}"
 
           # Variable files provided by the caller are passed before the
           # generated one, so that the generated values take precedence.
