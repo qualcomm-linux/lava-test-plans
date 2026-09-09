@@ -53,13 +53,29 @@ def generate_audio_clips_url():
         return None
 
 
+def merge_variables(context, variables):
+    """
+    Merge one variables file into the context.
+
+    Plain values overwrite, as they always have. A mapping - an ini section or
+    a nested YAML key, which is how EXTRA_METADATA is written - is merged into
+    a mapping of the same name instead of replacing it, so that a caller's own
+    section survives a later file adding keys to it.
+    """
+    for key, value in variables.items():
+        if isinstance(value, dict) and isinstance(context.get(key), dict):
+            context[key].update(value)
+        else:
+            context[key] = value
+
+
 def get_context(script_dirname, args_variables, args_overwrite_variables):
     context = {}
     for variables in args_variables:
         if not os.path.exists(variables):
             variables = os.path.join(script_dirname, variables)
         try:
-            context.update(ConfigObj(variables).dict())
+            merge_variables(context, ConfigObj(variables).dict())
         except ConfigObjError as e:
             logger.info(e)
             logger.info("Unable to parse .ini file")
@@ -67,7 +83,7 @@ def get_context(script_dirname, args_variables, args_overwrite_variables):
             with open(variables, "r") as vars_file:
                 try:
                     yaml = YAML(typ="safe")
-                    context.update(yaml.load(vars_file))
+                    merge_variables(context, yaml.load(vars_file))
                 except ParserError as e:
                     logger.error(e)
                 except ComposerError as e:

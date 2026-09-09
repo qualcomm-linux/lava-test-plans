@@ -1,1 +1,4 @@
-  build-url: {{BUILD_URL | default('')}}
+{%- set METADATA = {
+  'build-url': BUILD_URL | default(''),
+} -%}
+{% include "include/metadata.jinja2" %}
