@@ -59,6 +59,46 @@ Lines starting with *#* are omited. Variables can also be set using
 
 Variables can also be stored in YAML file. Usual YAML syntax applies.
 
+## Extra job metadata
+
+Each project template names the metadata keys it always emits - the build URL,
+the pull request it came from, the workflow run that rendered it. Those are
+emitted whether or not they are set, so a query written against one of them
+matches every job.
+
+Recording anything else - which recipe or commit the build came from, how it was
+configured - does not need a change to the templates. *EXTRA_METADATA* is a
+mapping, and every key in it is added to the metadata of the rendered job. In an
+ini file it is a section, in a YAML file a nested key:
+
+```ini
+# Plain variables have to come before the section: every line after the section
+# header belongs to it.
+BUILD_URL=https://example.com/build/1
+
+[EXTRA_METADATA]
+kernel-recipe = "linux-qcom"
+kernel-commit = "8a3c8dae4f"
+kernel-config = "defconfig, distro.config"
+```
+
+```yaml
+EXTRA_METADATA:
+  kernel-recipe: linux-qcom
+  kernel-commit: 8a3c8dae4f
+```
+
+Quote ini values: an unquoted comma is read as a list separator. Values are
+rendered as strings, so a value YAML would otherwise read as something else - a
+branch called *yes*, a release like *6.18* - stays what it was written as.
+
+A key that collides with one of the named keys is ignored and the named value is
+kept, rather than the key being emitted twice and the job failing to render. The
+named keys are the ones queries are written against, so they win.
+
+Unlike plain variables, which a later *--variables* file overwrites, mappings are
+merged: a second file adds keys to *EXTRA_METADATA* instead of replacing it.
+
 ## Timeouts
 
 Overall job timeout is a sum of action timeouts. There are 6 components:

@@ -1,0 +1,29 @@
+{#
+  Renders a LAVA job metadata block.
+
+  The including template sets METADATA to the named keys it wants to emit.
+  Those are the stable vocabulary: a query written against one of them means
+  the same thing whichever project rendered the job, so they are always
+  emitted, empty when unset.
+
+  EXTRA_METADATA carries anything else a caller wants to record without
+  needing a change here. It is a mapping, so in an ini variables file it is a
+  section and in a YAML one a nested key:
+
+    [EXTRA_METADATA]              EXTRA_METADATA:
+    kernel-recipe = "linux-qcom"    kernel-recipe: linux-qcom
+
+  A key that collides with a named one is dropped rather than emitted twice:
+  the named value wins, because it is the one queries are written against,
+  and a duplicate key would fail the whole job.
+
+  Values are rendered with tojson so that a value YAML would otherwise read as
+  something else - a branch called "yes", a sha that is all digits - stays the
+  string it was.
+#}
+{%- for key, value in METADATA.items() %}
+  {{ key }}: {{ value | tojson }}
+{%- endfor %}
+{%- for key, value in (EXTRA_METADATA | default({})).items() if key not in METADATA %}
+  {{ key }}: {{ value | tojson }}
+{%- endfor %}
