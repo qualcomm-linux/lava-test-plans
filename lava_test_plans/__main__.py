@@ -536,6 +536,14 @@ def main():
             logger.info(
                 f"Found EXCLUDED_TESTS in device file: {device_module.EXCLUDED_TESTS}"
             )
+
+        # Export generic device-specific values for testcase templates.
+        if hasattr(device_module, "TESTCASE_VARIABLES"):
+            context.update(device_module.TESTCASE_VARIABLES)
+            logger.info(
+                f"Found TESTCASE_VARIABLES in device file: "
+                f"{device_module.TESTCASE_VARIABLES}"
+            )
     except TemplateNotFound as e:
         logger.debug(f"Could not extract EXCLUDED_TESTPLANS from device file: {e}")
     except TemplateSyntaxError as e:

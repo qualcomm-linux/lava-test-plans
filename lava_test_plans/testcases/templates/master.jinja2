@@ -28,8 +28,11 @@
 
 {% block test_target %}
 {% if all_tests is defined %}
+  {# A test with variants is included when its base name is not excluded and #}
+  {# at least one variant is defined. Non-variant tests retain old behavior. #}
   {% for test in all_tests %}
-  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) and
+        (test.variants is not defined or test.variants) %}
   {{ super() }}
   {# include the super block once if any tests are included #}
   {% break %}
@@ -39,8 +42,51 @@
     # {{ TEST_DEFINITIONS_REVISION|default("HEAD", true) }} resolved to {{ testdef_sha }}
 {% endif %}
     {% for test in all_tests %}
-    {# Check if test should be included (not excluded AND condition met if specified) #}
-    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+    {# Check if the base test should be included. #}
+    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) and
+          (test.variants is not defined or test.variants) %}
+      {% if test.variants is defined %}
+        {% for variant in test.variants %}
+    {%- if testdef_sha %}
+    - from: url
+      name: "{{ variant.name|default(test.name + "_" + variant.suffix) }}"
+      path: {{ test.path }}
+      repository: {{ testdef_repo }}/archive/{{ testdef_sha }}.tar.gz
+      strip-components: 1
+    {%- else %}
+    - from: git
+      name: "{{ variant.name|default(test.name + "_" + variant.suffix) }}"
+      path: {{ test.path }}
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+      {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
+      revision: {{ TEST_DEFINITIONS_REVISION }}
+      {% endif %}
+    {% endif %}
+      {% if test.params is defined or variant.params is defined %}
+      {% set base_params = test.params|default({}) %}
+      {% set variant_params = variant.params|default({}) %}
+      params:
+        {% for param_key, param_value in base_params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+        {% for param_key, param_value in variant_params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+      {% endif %}
+      {% if variant.expected is defined and variant.expected %}
+      expected:
+        {% for expected in variant.expected %}
+        - {{ expected }}
+        {% endfor %}
+      {% elif test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+
+        {% endfor %}
+      {% else %}
     {%- if testdef_sha %}
     - from: url
       name: "{{ test.name }}"
@@ -69,6 +115,7 @@
         {% endfor %}
       {% endif %}
 
+      {% endif %}
     {% endif %}
     {% endfor %}
 {% else %}
