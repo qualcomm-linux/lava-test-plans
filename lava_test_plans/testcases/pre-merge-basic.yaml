@@ -28,5 +28,9 @@
     {"name": "Logging_Journalctl_Validation", "path": "Runner/suites/System/Logging/Logging_Journalctl_Validation/Logging_Journalctl_Validation.yaml", "expected": ["Logging_Journalctl_Validation"]},
     {"name": "Partition_PostBoot_Validation", "path": "Runner/suites/Kernel/Baseport/Storage/Partition_PostBoot_Validation/Partition_PostBoot_Validation.yaml", "expected": ["Partition_PostBoot_Validation"]},
     {"name": "Boot_Systemd_KPI_Loop", "path": "Runner/suites/Performance/Boot_Systemd_KPI_Loop/Boot_Systemd_KPI_Loop.yaml", "expected": ["Boot_Systemd_KPI_Loop"]},
-    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]}
+    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]},
+    {"name": "DMA_BUF_Heap_Validation", "path": "Runner/suites/Kernel/Baseport/DMA_BUF_Heap_Validation/DMA_BUF_Heap_Validation.yaml", "expected": ["DMA_BUF_Heap_Validation"]},
+    {"name": "RTC_Validation", "path": "Runner/suites/Kernel/Baseport/RTC_Validation/RTC_Validation.yaml", "expected": ["RTC_Validation"]},
+    {"name": "TQFTP_Validation", "path": "Runner/suites/Kernel/Baseport/TQFTP_Validation/TQFTP_Validation.yaml", "expected": ["TQFTP_Validation"]},
+    {"name": "Thermal_Validation", "path": "Runner/suites/Kernel/Baseport/Thermal_Validation/Thermal_Validation.yaml", "expected": ["Thermal_Validation"]},
 ] %}
