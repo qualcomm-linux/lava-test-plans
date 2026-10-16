@@ -1,0 +1,20 @@
+{# Log in once the board has booted (it was powered or rebooted by an   #}
+{# earlier action) and mount the partition holding the LAVA overlay: the #}
+{# images boot Linux from an initramfs, the rootfs partition only holds #}
+{# the overlay.                                                          #}
+- boot:
+    method: minimal
+    reset: false
+    auto_login:
+      login_prompt: {{ login_prompt|default("buildroot login:")|tojson }}
+      username: root
+      login_commands:
+      # Kernel console messages interleave with the test shell signals;
+      # the kernel log stays complete in dmesg.
+      - dmesg -n 1
+      - {{ ("mkdir -p /lava-ovl; for p in /sys/class/block/*; do grep -qx PARTNAME=" ~ overlay_partlabel|default("rootfs") ~ " $p/uevent && mount -t ext4 /dev/${p##*/} /lava-ovl; done; ln -sf /lava-ovl/lava-* /")|tojson }}
+    # A bare '# ' also matches kernel lines such as "PME# supported".
+    prompts:
+    - '\n# '
+    timeout:
+      minutes: {{ login_timeout|default(6) }}

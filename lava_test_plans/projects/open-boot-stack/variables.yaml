@@ -1,0 +1,18 @@
+# Placeholder variables to render the open boot stack jobs locally with
+# --dry-run; a real run passes the build's own (README.md), followed by the
+# board's facts from boards/<machine>.yaml.
+"PROJECT_NAME": "open-boot-stack"
+"PROJECT": "projects/open-boot-stack/"
+"LAVA_JOB_PRIORITY": "50"
+"BUILD_NUMBER": "1"
+"OS_INFO": "buildroot"
+"ROOTFS_URL": "https://example.invalid/open-boot-stack/full.qcomflash.tar.gz"
+"BUILD_URL": "https://example.invalid/open-boot-stack"
+"FIRMWARE_FINGERPRINT": "OBSFP-000000-000000"
+"TEST_DEFINITIONS_REPOSITORY": "https://github.com/Linaro/test-definitions.git"
+# inference: the QAIRT SDK the jobs fetch from Qualcomm, and the model
+# bundle the images carry (or INFERENCE_MODEL_URL, a tarball of model/).
+"QAIRT_URL": "https://softwarecenter.qualcomm.com/api/download/software/sdks/Qualcomm_AI_Runtime_Community/All/2.42.0.251225/v2.42.0.251225.zip"
+"QAIRT_SHA256": "1a744ed72a813fc9dd4a29e31b1685f784786102fd45414d74915bb3351ae321"
+"QAIRT_ROOT": "qairt/2.42.0.251225"
+"INFERENCE_MODEL_DIR": "/usr/share/npu-qnn/model"

@@ -1,0 +1,31 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{# Boot an image whose kernel command line has memtest=MEMTEST: the     #}
+{# firmware fingerprints, the kernel's early memory test (first, while  #}
+{# its log lines are still in the kernel log), then the boot checks.    #}
+{# Board facts: projects/open-boot-stack/boards/.                       #}
+{% set test_name = "open-boot-stack-memtest" %}
+{% set tests_timeout = 10 %}
+{% set test_timeout = tests_timeout + 3 %}
+{# The memory test runs before the login prompt. #}
+{% set login_timeout = 15 %}
+{% import "testcases/templates/definitions.jinja2" as defs with context %}
+{% import "projects/open-boot-stack/include/common.jinja2" as c with context %}
+{% set td = c.td %}
+
+{% set tests = [
+    {"name": "memtest", "path": td ~ "memtest/memtest.yaml",
+     "params": {"PATTERNS": MEMTEST|default("")|string}},
+    c.boot_fingerprint,
+    {"name": "boot-handoff", "path": td ~ "boot-handoff/boot-handoff.yaml", "params": c.boot_handoff_params},
+    c.kernel_health,
+] %}
+
+{% block test_target %}
+- test:
+    timeout:
+      minutes: {{ tests_timeout }}
+    definitions:
+{{ defs.definitions(tests, TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{{ c.poweroff }}
+{% endblock test_target %}

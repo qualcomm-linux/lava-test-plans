@@ -1,0 +1,34 @@
+# Qualcomm Lemans EVK (QCS9075): what the open boot stack hands to Linux and
+# what the tests expect of it. Pass with --variables after variables.yaml.
+OBS_CPUS: "8"
+OBS_BOOT_CPU: "0x0"
+OBS_EXCEPTION_LEVEL: "EL2"
+OBS_KVM: "vhe"
+OBS_TEE: "optee"
+OBS_PSCI_MODE: "osi"
+OBS_REMOTEPROCS: "adsp cdsp cdsp1 gpdsp0 gpdsp1"
+OBS_REMOTEPROC_RESTART_XFAIL: ""
+OBS_FASTRPC_TESTS: "adsp:adsp:0:0 cdsp:cdsp:3:0 cdsp-unsigned-pd:cdsp:3:1 cdsp1:cdsp1:4:0 cdsp1-unsigned-pd:cdsp1:4:1"
+OBS_FASTRPC_NODES: "gpdsp0:/dev/fastrpc-gdsp0 gpdsp1:/dev/fastrpc-gdsp1"
+OBS_AUDIO:
+  CARD: "LEMANSEVK"
+  PCM: "MultiMedia1"
+  MIXER: "PRIMARY_MI2S_RX Audio Mixer MultiMedia1=1"
+  REMOTEPROC: "adsp"
+  CAPTURE_PCM: "MultiMedia2"
+  CAPTURE_MIXER: "MultiMedia2 Mixer TERTIARY_MI2S_TX=1"
+  CAPTURE_CHANNELS: "1"
+  CAPTURE_RATE: "48000"
+OBS_GPU_TEST_CMD: "egl-readback"
+OBS_VIDEO:
+  DEVICE: "aa00000.video-codec"
+  DRIVER: "qcom-iris"
+  FIRMWARE: "/lib/firmware/qcom/vpu/vpu30_p4_s6_16mb.mbn"
+  DECODERS: "h264 hevc vp9"
+  ENCODERS: "h264 hevc"
+OBS_KVM_CPUS: ""
+OBS_CPU_FEATURES_EXPECTED: "FEAT_AA32EL0 FEAT_AA64EL2 FEAT_AA64EL3 FEAT_FP16 FEAT_GICv3 FEAT_RAS FEAT_CSV2 FEAT_CSV3 FEAT_SSBS FEAT_Debugv8p2 FEAT_PMUv3 FEAT_PMUv3p1 FEAT_AES FEAT_PMULL FEAT_SHA1 FEAT_SHA256 FEAT_CRC32 FEAT_LSE FEAT_RDM FEAT_DotProd FEAT_FlagM FEAT_DPB FEAT_PAuth FEAT_PACQARMA5 FEAT_EPAC FEAT_PAuth2 FEAT_LRCPC FEAT_LRCPC2 FEAT_TGran16 FEAT_TGran64 FEAT_TGran4 FEAT_MixedEnd FEAT_HAFDBS FEAT_VMID16 FEAT_VHE FEAT_HPDS FEAT_HPDS2 FEAT_LOR FEAT_PAN FEAT_PAN2 FEAT_XNX FEAT_TTCNP FEAT_UAO FEAT_IESB FEAT_LSE2"
+# inference: the processing units and runtimes (PUS) and the units the
+# board lacks, with the reason (ABSENT).
+OBS_INFERENCE_PUS: "cpu:qnn npu0:qnn-htp:v73:0:cdsp npu1:qnn-htp:v73:1:cdsp1 cpu:tflite gpu:tflite-gpu"
+OBS_INFERENCE_ABSENT: ""
