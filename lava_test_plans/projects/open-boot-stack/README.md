@@ -9,14 +9,14 @@ build fingerprint, so a job first proves that the board runs the build under
 test, then checks what the firmware hands over to Linux and the platform
 features that depend on it (CPUs and PSCI, cpufreq, CPU features, remote
 processors, FastRPC, machine learning inference on the CPU, GPU and NPU,
-audio, GPU, video, KVM, OP-TEE).
+audio, GPU, video, KVM, OP-TEE, suspend).
 
 The test definitions are the generic ones in
 [test-definitions](https://github.com/Linaro/test-definitions)
 `automated/linux/` (boot-fingerprint, boot-handoff, cpu-features,
 cpufreq-policy, remoteproc-smoke, fastrpc, inference, alsa-dsp-restart,
 remoteproc-restart, optee, gpu-render, video-codec, kvm-unit-tests,
-kvm-guest, cpu-hotplug, kernel-health, maxcpus, memtest).
+kvm-guest, cpu-hotplug, kernel-health, maxcpus, memtest, resume-check).
 
 ## Devices
 
@@ -30,11 +30,11 @@ kvm-guest, cpu-hotplug, kernel-health, maxcpus, memtest).
 
 A device file names the qcomflash layout, the firmware stages whose console
 banners carry the fingerprint (`firmware_stages`) and the tests the board
-cannot run (`EXCLUDED_TESTS`). What the tests expect of
+cannot run (`EXCLUDED_TESTS`, `EXCLUDED_TESTPLANS`). What the tests expect of
 the board (CPU count, boot CPU, KVM mode, PSCI mode, remote processors, audio
-and video parameters, CPU features, inference processing units) is in
-`boards/<machine>.yaml`, a variables file passed after `variables.yaml`, so
-that the test cases can use it.
+and video parameters, CPU features, inference processing units, suspend
+modes) is in `boards/<machine>.yaml`, a variables file passed after
+`variables.yaml`, so that the test cases can use it.
 
 The images boot Linux from an initramfs; the `rootfs` partition of the
 qcomflash only carries the LAVA overlay, which the login mounts.
@@ -43,7 +43,7 @@ qcomflash only carries the LAVA overlay, which the login mounts.
 
 | Test plan | Jobs |
 |---|---|
-| `open-boot-stack/full` | `open-boot-stack`: cold boot fingerprints, the Linux tests, a warm reboot with fingerprints and the boot checks again. |
+| `open-boot-stack/full` | `open-boot-stack`: cold boot fingerprints, the Linux tests, a warm reboot with fingerprints and the boot checks again. `open-boot-stack-suspend`: s2idle and deep suspend, woken by the lab's `wake_up` command (boards that have one). |
 | `open-boot-stack/maxcpus` | An image booting with `maxcpus=MAXCPUS`: the CPUs started late through PSCI CPU_ON. |
 | `open-boot-stack/memtest` | An image booting with `memtest=MEMTEST`: the kernel's early memory test. |
 | `open-boot-stack/negative` | `open-boot-stack-inference-negative`: the inference test with the NSP/DSP remoteprocs stopped, no OpenCL platform, and the expected classes rotated; the affected cases must fail. |
@@ -60,6 +60,9 @@ qcomflash only carries the LAVA overlay, which the login mounts.
 | `MAXCPUS`, `MEMTEST` | The values the maxcpus and memtest images boot with. |
 | `QAIRT_URL`, `QAIRT_SHA256`, `QAIRT_ROOT` | The Qualcomm AI Runtime SDK zip, downloaded by the dispatcher as a file overlay on the rootfs partition for boards with a QNN entry; it is never part of an image. |
 | `INFERENCE_MODEL_DIR` | The model bundle in the image, or `INFERENCE_MODEL_URL`: a tarball of `model/`, deployed as an overlay. |
+
+`open-boot-stack-suspend` uses `resume-check` from test-definitions and the
+`wait_resume` and `wake_up` commands of the device dictionary.
 
 ## Testing
 

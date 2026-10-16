@@ -6,3 +6,6 @@
 {% set firmware_stages = ["BL2", "BL31", "OP-TEE version", "U-Boot"] %}
 
 {% set EXCLUDED_TESTS = [] %}
+
+{# No lab-controlled wake-up source (wake_up command) for suspend. #}
+{% set EXCLUDED_TESTPLANS = ["open-boot-stack-suspend.yaml"] %}

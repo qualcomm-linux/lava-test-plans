@@ -117,6 +117,29 @@ def test_stage_fingerprints(tmp_path):
     assert fingerprint["params"]["FIRMWARE_FINGERPRINT"] == "UB-3"
 
 
+def test_suspend_only_with_wake_up(tmp_path):
+    for device, expected in (("ventuno-q", False), ("rb3gen2", True)):
+        out = tmp_path / device
+        assert render(device, '--test-plan "open-boot-stack/full"', out) == 0
+        rendered = os.listdir(out / device)
+        assert ("open-boot-stack-suspend.yaml" in rendered) == expected
+    job = load(tmp_path / "rb3gen2" / "rb3gen2" / "open-boot-stack-suspend.yaml")
+    assert [a["command"]["name"] for a in job["actions"] if "command" in a] == [
+        "wait_resume",
+        "wake_up",
+        "wait_resume",
+        "wake_up",
+    ]
+    assert definitions(job) == [
+        "boot-fingerprint",
+        "pre-suspend-check-s2idle",
+        "resume-check-s2idle",
+        "pre-suspend-check-deep",
+        "resume-check-deep",
+        "kernel-health",
+    ]
+
+
 def test_qairt_overlay_only_with_qnn(tmp_path):
     # The QAIRT zip is downloaded as a file overlay only for boards with a
     # QNN entry; the others keep the plain LAVA overlay.

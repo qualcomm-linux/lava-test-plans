@@ -1,0 +1,80 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{# Suspend to RAM and resume once per mode in OBS_SUSPEND_MODES (s2idle, #}
+{# deep): the resume-check definitions record the state before the       #}
+{# suspend and check the cycle after it, the lab's wake_up command wakes #}
+{# the board. Needs a device with the wake_up and wait_resume commands.  #}
+{# Board facts: projects/open-boot-stack/boards/.                        #}
+{% set test_name = "open-boot-stack-suspend" %}
+{% set modes = OBS_SUSPEND_MODES|default(["s2idle", "deep"]) %}
+{% set test_timeout = 10 + 10 * modes|length %}
+{% import "testcases/templates/definitions.jinja2" as defs with context %}
+{% import "projects/open-boot-stack/include/common.jinja2" as c with context %}
+{% set td = c.td %}
+{% set user_commands_timeout = user_commands_timeout|default(2) %}
+
+{% block test_target %}
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+{{ defs.definitions([c.boot_fingerprint], TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{% for mode in modes %}
+- test:
+    timeout:
+      minutes: 2
+    definitions:
+{{ defs.definitions([{"name": "pre-suspend-check-" ~ mode, "path": td ~ "resume-check/pre-suspend-check.yaml",
+                     "params": {"SLEEP_MODE": "mem"}}], TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{# Suspend five seconds later, in the background, so that the prompt #}
+{# comes back first. The arithmetic keeps the echo of the command    #}
+{# from matching the markers.                                        #}
+- test:
+    interactive:
+    - name: suspend-{{ mode }}
+      prompts:
+      - '\n# '
+      script:
+      - name: suspend-{{ mode }}-request
+        command: '(sleep 5; echo "obs-suspend-$((1 + 1))"; echo {{ mode }} > /sys/power/mem_sleep && echo mem > /sys/power/state; echo "obs-resume-$((2 + 1)) $?") &'
+    timeout:
+      minutes: 1
+- command:
+    name: wait_resume
+    timeout:
+      minutes: {{ user_commands_timeout }}
+- command:
+    name: wake_up
+    timeout:
+      minutes: {{ user_commands_timeout }}
+{# The marker the background job prints once the write to /sys/power/state #}
+{# returns, i.e. after the resume; then a fresh prompt for the test shell.  #}
+- test:
+    interactive:
+    - name: resume-{{ mode }}
+      prompts:
+      - 'obs-resume-3 [0-9]+'
+      script:
+      - name: resume-{{ mode }}-returned
+        command:
+    - name: resume-{{ mode }}-shell
+      prompts:
+      - '\n# '
+      script:
+      - name: resume-{{ mode }}-prompt
+        command: ''
+    timeout:
+      minutes: 2
+- test:
+    timeout:
+      minutes: 2
+    definitions:
+{{ defs.definitions([{"name": "resume-check-" ~ mode, "path": td ~ "resume-check/resume-check.yaml"}], TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{% endfor %}
+- test:
+    timeout:
+      minutes: 2
+    definitions:
+{{ defs.definitions([c.kernel_health], TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{{ c.poweroff }}
+{% endblock test_target %}
