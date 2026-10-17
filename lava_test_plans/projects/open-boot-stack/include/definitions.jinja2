@@ -1,0 +1,31 @@
+{# definitions(tests): the test definitions of one test action, fetched #}
+{# like testcases/templates/master.jinja2 does: from the GitHub tarball #}
+{# of the resolved revision, or from git. tests is a list of            #}
+{# {"name", "path", "params"[, "include"]}; an entry whose include is   #}
+{# false, or whose name is in EXCLUDED_TESTS, is left out.              #}
+{% macro definitions(tests) %}
+{% set repo = TEST_DEFINITIONS_REPOSITORY|default("")|trim|trim("/") %}
+{% set repo = repo[:-4] if repo.endswith(".git") else repo %}
+{% set sha = TEST_DEFINITIONS_REVISION_SHA|default("") %}
+{% for test in tests if test.include|default(true) and test.name not in EXCLUDED_TESTS|default([]) %}
+    - name: {{ test.name|tojson }}
+      path: {{ test.path }}
+{% if sha %}
+      from: url
+      repository: {{ repo }}/archive/{{ sha }}.tar.gz
+      strip-components: 1
+{% else %}
+      from: git
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+{% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
+      revision: {{ TEST_DEFINITIONS_REVISION }}
+{% endif %}
+{% endif %}
+{% if test.params %}
+      params:
+{% for key, value in test.params.items() %}
+        {{ key }}: {{ value|string|tojson }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{%- endmacro %}

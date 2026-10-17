@@ -1,0 +1,43 @@
+{# definitions(tests, repository, excluded): the test definitions of a   #}
+{# test action. tests is a list of {"name", "path"[, "params",           #}
+{# "expected", "include"]}; an entry whose name is in excluded or whose  #}
+{# include is false is left out. repository is the test definitions     #}
+{# repository (TEST_DEFINITIONS_REPOSITORY as master.jinja2 sets it).    #}
+{# GitHub serves a source tarball per commit, so with the sha resolved   #}
+{# before rendering the definitions share one cached fetch instead of a  #}
+{# git clone each.                                                        #}
+{% macro definitions(tests, repository, excluded=[]) %}
+{% set testdef_repo = repository|trim|trim("/") %}
+{% set testdef_repo = testdef_repo[:-4] if testdef_repo.endswith(".git") else testdef_repo %}
+{% set testdef_sha = TEST_DEFINITIONS_REVISION_SHA|default("") %}
+{% for test in tests if test.name not in excluded and test.include|default(true) %}
+    {%- if testdef_sha %}
+    - from: url
+      name: "{{ test.name }}"
+      path: {{ test.path }}
+      repository: {{ testdef_repo }}/archive/{{ testdef_sha }}.tar.gz
+      strip-components: 1
+    {%- else %}
+    - from: git
+      name: "{{ test.name }}"
+      path: {{ test.path }}
+      repository: {{ repository }}
+      {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
+      revision: {{ TEST_DEFINITIONS_REVISION }}
+      {% endif %}
+    {% endif %}
+      {% if test.params is defined %}
+      params:
+        {% for param_key, param_value in test.params.items() %}
+        {{ param_key }}: {{ param_value|string|tojson }}
+        {% endfor %}
+      {% endif %}
+      {% if test.expected is defined and test.expected %}
+      expected:
+        {% for expected in test.expected|default([]) %}
+        - {{ expected }}
+        {% endfor %}
+      {% endif %}
+
+{% endfor %}
+{%- endmacro %}
