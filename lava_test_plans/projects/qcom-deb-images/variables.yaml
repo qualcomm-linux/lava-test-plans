@@ -46,4 +46,4 @@
 "ARTIFACT_PREFIX": "trixie"
 "OS_INFO": "debian"
 "TEST_DEFINITIONS_REPOSITORY": "https://github.com/qualcomm-linux/qcom-linux-testkit/"
-"TEST_DEFINITIONS_REVISION": "main"
+"TEST_DEFINITIONS_REVISION": "testkit-2026.10.12"
