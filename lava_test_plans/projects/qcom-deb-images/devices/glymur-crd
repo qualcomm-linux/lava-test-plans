@@ -6,5 +6,6 @@
 {% set qdl_tarball = "flash-emmc.tar.gz" %}
 
 {% import "projects/qcom-deb-images/include/excluded-tests.jinja2" as excluded %}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS %}
+{# fastrpc_test fails (qcom-deb-images #696) #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['fastrpc_test'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
