@@ -12,7 +12,6 @@
 {# exclusions are tracked in                                     #}
 {# https://github.com/qualcomm-linux/qcom-deb-images/issues/647 #}
 {% import "projects/qcom-deb-images/include/excluded-tests.jinja2" as excluded %}
-{# hotplug passes or fails by chance (qcom-deb-images #692) #}
 {# BT_ON_OFF passes or fails by chance (qcom-deb-images #735) #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF'] %}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['BT_ON_OFF'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
