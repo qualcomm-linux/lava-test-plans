@@ -206,3 +206,34 @@ def test_template_count_with_exclusions(device_name, tmp_path):
         f"{device_name}: Expected {expected_count} (total={total_testplans}, "
         f"excluded={excluded}), got {len(generated_files)}"
     )
+
+
+def test_fastrpc_variants_for_iq_9075_evk(tmp_path):
+    """Render one explicit FastRPC testcase for every expected DSP domain."""
+    device_name = "iq-9075-evk"
+    expected_domains = ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"]
+    temp_output = tmp_path / "test_output"
+
+    sys.argv = shlex.split(
+        f'lava_test_plans --dry-run --variables "variables.ini" '
+        f'--testplan-device-path "lava_test_plans/projects/meta-qcom/devices" '
+        f'--device-type "projects/meta-qcom/devices/{device_name}" '
+        f'--test-case "pre-merge-basic.yaml" '
+        f'--dry-run-path "{temp_output}"'
+    )
+
+    assert main() == 0
+
+    generated_file = (
+        temp_output / f"projects/meta-qcom/devices/{device_name}/pre-merge-basic.yaml"
+    )
+    rendered = generated_file.read_text()
+
+    for domain in expected_domains:
+        assert f"name: fastrpc_test_{domain}" in rendered
+        assert f"DOMAIN_NAME: {domain}" in rendered
+
+    assert rendered.count(
+        "path: Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml"
+    ) == len(expected_domains)
+    assert rendered.count("- fastrpc_test") == len(expected_domains)
