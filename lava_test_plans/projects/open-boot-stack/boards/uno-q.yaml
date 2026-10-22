@@ -1,0 +1,33 @@
+# Arduino UNO Q (QRB2210): what the open boot stack hands to Linux and what
+# the tests expect of it. Pass with --variables after variables.yaml.
+OBS_CPUS: "4"
+OBS_BOOT_CPU: "0x0"
+OBS_EXCEPTION_LEVEL: "EL2"
+OBS_KVM: "nvhe"
+OBS_TEE: "optee"
+# The BL31 offers no CPU_SUSPEND power-down states: no PSCI CPU PM domains.
+OBS_PSCI_MODE: ""
+OBS_REMOTEPROCS: "adsp"
+OBS_REMOTEPROC_RESTART_XFAIL: "adsp=the Linux audio drivers do not survive an ADSP stop"
+# fastrpc_test ships no Hexagon v66 libraries: check the node only.
+OBS_FASTRPC_TESTS: ""
+OBS_FASTRPC_NODES: "adsp:/dev/fastrpc-adsp"
+OBS_AUDIO:
+  CARD: "ArduinoImolaHPH"
+  PCM: "MultiMedia1"
+  MIXER: "RX_CODEC_DMA_RX_0 Audio Mixer MultiMedia1=1;RX_HPH PWR Mode=LOHIFI;RX_MACRO RX0 MUX=AIF1_PB;RX_MACRO RX1 MUX=AIF1_PB;RX INT0_1 MIX1 INP0=RX0;RX INT1_1 MIX1 INP0=RX1;RX INT0 DEM MUX=CLSH_DSM_OUT;RX INT1 DEM MUX=CLSH_DSM_OUT;HPHL_RDAC Switch=1;HPHR_RDAC Switch=1;HPHL Switch=1;HPHR Switch=1"
+  # The DSP restart cases skip: the audio drivers do not survive it yet.
+  REMOTEPROC: "none"
+OBS_GPU_TEST_CMD: "egl-readback"
+OBS_VIDEO:
+  DEVICE: "5a00000.video-codec"
+  DRIVER: "qcom-venus"
+  FIRMWARE: "/lib/firmware/qcom/venus-6.0/venus.mbn"
+  DECODERS: "h264 hevc vp9"
+  ENCODERS: "h264 hevc"
+OBS_KVM_CPUS: ""
+OBS_CPU_FEATURES_EXPECTED: "FEAT_AA32EL0 FEAT_AA32EL1 FEAT_AA64EL2 FEAT_AA32EL2 FEAT_AA64EL3 FEAT_GICv3 FEAT_CSV2 FEAT_CSV3 FEAT_PMUv3 FEAT_AES FEAT_PMULL FEAT_SHA1 FEAT_SHA256 FEAT_CRC32 FEAT_TGran64 FEAT_TGran4 FEAT_MixedEnd"
+# inference: the processing units and runtimes (PUS) and the units the
+# board lacks, with the reason (ABSENT).
+OBS_INFERENCE_PUS: "cpu:tflite gpu:tflite-gpu"
+OBS_INFERENCE_ABSENT: "npu=QRB2210 has no Hexagon NSP;cpu-qnn=QAIRT 2.42 does not support QRB2210 (soc_id 524)"

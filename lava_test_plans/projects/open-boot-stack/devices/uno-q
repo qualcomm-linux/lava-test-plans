@@ -1,0 +1,8 @@
+{% extends "devices/qrb2210-arduino-imola" %}
+
+{% set qdl_image_dir = "openbootstack-uno-q" %}
+
+{# Banners that carry the build fingerprint, in boot order. #}
+{% set firmware_stages = ["BL2", "BL31", "OP-TEE version", "U-Boot"] %}
+
+{% set EXCLUDED_TESTS = [] %}

@@ -1,0 +1,9 @@
+{% extends "devices/qcs6490-rb3gen2" %}
+
+{% set qdl_image_dir = "openbootstack-rb3gen2" %}
+
+{# Banners that carry the build fingerprint, in boot order. #}
+{% set firmware_stages = ["BL2", "BL31", "OP-TEE version", "U-Boot"] %}
+
+{# No audio userspace in the image. #}
+{% set EXCLUDED_TESTS = ["alsa-dsp-restart"] %}
