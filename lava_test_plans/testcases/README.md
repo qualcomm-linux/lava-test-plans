@@ -48,6 +48,35 @@ small subset across several areas so that a pull request gets a fast answer.
 qcom-linux-testkit ships a `run.sh` but no LAVA test definition for them, so
 there is nothing for `path:` to point at.
 
+## Suspend and resume
+
+`suspend-resume.yaml` suspends the board to RAM and has the lab wake it, once
+per mode in `SUSPEND_MODES` (default `["default"]`, the kernel's
+`/sys/power/mem_sleep` setting; `["s2idle", "deep"]` tests both). It works on
+any image with a POSIX shell whose kernel console is the connection LAVA reads:
+the suspend is started in the background, with the console loglevel raised so
+that the kernel's `PM: suspend entry` reaches the console, and the lab wakes
+the board only once that line is seen; a suspend that does not start within a
+minute fails the `suspend-<mode>-entry` case with a timeout. The job then waits
+for the marker the background job prints after the resume, and for the shell
+prompt the boot accepts (`BOOT_OS_PROMPT` or `root@(.*):[/~]#`) before the next
+test definition. Around each suspend, `pre-suspend-check` and `resume-check`
+from test-definitions `automated/linux/resume-check` tell a resume from a
+reboot and read the suspend statistics and the kernel log of the cycle;
+`RESUME_CHECK_REPOSITORY` and `RESUME_CHECK_BRANCH` select where they are
+fetched from (default: the `suspend-resume` branch of
+`mwasilew/test-definitions`, until resume-check is in Linaro/test-definitions).
+A write to `/sys/power/state` that fails ends the job with a `TestError`.
+
+The device dictionary must provide two user commands: `wake_up`, which
+wakes the board (a power button press or an equivalent lab signal), and
+`wait_resume`, which gives it time to resume. Devices without them exclude
+the test plan with `EXCLUDED_TESTPLANS`. `wake_up` runs as soon as the kernel
+starts the suspend, a fraction of a second before the board is asleep, so it
+must hold or repeat the wake signal past that point (holding the power button
+for a second does). The job syncs filesystems just before the suspend, so the
+kernel's own sync in that fraction of a second is short.
+
 ## Tests that need lab setup
 
 Some entries carry an `include` condition and only end up in the job when the
