@@ -1,0 +1,188 @@
+name: Render test jobs
+
+# Render every test plan of every project through the action, with the
+# defaults from action.yml, the way the downstream workflows call it. The jobs
+# are checked with the LAVA schema validator, then the test overlay of each job
+# is built like the dispatcher does, so that a test definition that cannot be
+# fetched or read fails here and not in the lab.
+#
+# update-testkit.yml calls it with a new qcom-linux-testkit tag in testkit_ref
+# before it proposes that tag as the testkit_ref default of the action. On a
+# push to the default branch, once every test plan passed, the commit is tagged
+# with the testkit_ref default when this repository does not have that tag yet.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      testkit_ref:
+        description: >
+          Revision of qcom-linux-testkit to render with. Defaults to the
+          testkit_ref default of action.yml.
+        type: string
+        required: false
+        default: ""
+
+# grant nothing by default; every job below declares the scopes it needs
+permissions: {}
+
+env:
+  TEST_LAVA_VALIDITY_CONTAINER: ghcr.io/linux-validation/lava/lava-server-amd64:2026.05-qualcomm-2026.05-20-01117a204
+
+jobs:
+  testplans:
+    name: List test plans
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: List test plans
+        id: list
+        run: |
+          set -euo pipefail
+          MATRIX='{"include": []}'
+          # test plans live in testplans/<project>/<distro>/<plan>
+          for PLAN_DIR in lava_test_plans/testplans/*/*/*/; do
+            PLAN_DIR="${PLAN_DIR%/}"
+            TESTPLAN="${PLAN_DIR#lava_test_plans/testplans/}"
+            PROJECT="${TESTPLAN%%/*}"
+            TESTPLAN="${TESTPLAN#*/}"
+            PROJECT_DIR="lava_test_plans/projects/${PROJECT}"
+            # a symlinked distro is an alias of another one, and the package
+            # the action installs does not keep symlinks anyway
+            if [ -L "lava_test_plans/testplans/${PROJECT}/${TESTPLAN%%/*}" ]; then
+              echo "::warning::skipping ${PROJECT}/${TESTPLAN}, it is a symlink"
+              continue
+            fi
+            if [ ! -d "${PROJECT_DIR}/devices" ]; then
+              echo "::warning::${PROJECT} has test plans but no devices"
+              continue
+            fi
+            MACHINES=$(find "${PROJECT_DIR}/devices" -mindepth 1 -maxdepth 1 ! -type d -printf '%f\n' | sort | paste -sd,)
+            VARIABLES_FILES=""
+            if [ -f "${PROJECT_DIR}/variables.yaml" ]; then
+              VARIABLES_FILES="${PROJECT_DIR}/variables.yaml"
+            fi
+            # the Yocto projects pass their distro, which selects the image
+            # names; qcom-deb-images does not
+            DISTRO_NAME="${TESTPLAN%%/*}"
+            if [ "${PROJECT}" = "qcom-deb-images" ]; then
+              DISTRO_NAME=""
+            fi
+            MATRIX=$(echo "${MATRIX}" | jq -c \
+              --arg project "${PROJECT}" \
+              --arg testplan "${TESTPLAN}" \
+              --arg machines "${MACHINES}" \
+              --arg distro_name "${DISTRO_NAME}" \
+              --arg variables_files "${VARIABLES_FILES}" \
+              --arg name "${PROJECT}-${TESTPLAN//\//-}" \
+              '.include += [$ARGS.named]')
+          done
+          echo "${MATRIX}" | jq .
+          echo "matrix=${MATRIX}" >> "${GITHUB_OUTPUT}"
+
+  render:
+    name: ${{ matrix.project }} ${{ matrix.testplan }}
+    needs: testplans
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.testplans.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Select test definitions revision
+        id: testkit
+        env:
+          TESTKIT_REF: ${{ inputs.testkit_ref }}
+        run: |
+          set -euo pipefail
+          # an empty testkit_ref passed to the action means the default branch
+          # of the testkit, not the default of the input, so resolve it here
+          if [ -z "${TESTKIT_REF}" ]; then
+            TESTKIT_REF=$(yq -r '.inputs.testkit_ref.default' action.yml)
+          fi
+          echo "ref=${TESTKIT_REF}" >> "${GITHUB_OUTPUT}"
+
+      - name: Render test jobs
+        id: render
+        uses: $/
+        with:
+          testkit_ref: ${{ steps.testkit.outputs.ref }}
+          machines: ${{ matrix.machines }}
+          project: ${{ matrix.project }}
+          testplan: ${{ matrix.testplan }}
+          distro_name: ${{ matrix.distro_name }}
+          variables_files: ${{ matrix.variables_files }}
+          build_url: https://example.com/builds/${{ github.run_id }}
+          prefix: testjobs-${{ matrix.name }}
+          validity_container: ${{ env.TEST_LAVA_VALIDITY_CONTAINER }}
+          upload_artifact: false
+
+      - name: Build test overlays
+        env:
+          JOBS_PATH: ${{ steps.render.outputs.jobs_path }}
+        run: |
+          pip install pyyaml
+          python .github/scripts/simulate-overlay.py \
+            --output "${RUNNER_TEMP}/overlays" \
+            --cache "${RUNNER_TEMP}/cache" \
+            "${JOBS_PATH}"
+
+  tag:
+    name: Tag testkit release
+    # runs only when every render job above succeeded
+    needs: render
+    if: >-
+      ${{ github.event_name == 'push'
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # gh api creating the tag
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Tag with the testkit_ref default
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TESTKIT_REPOSITORY: https://github.com/qualcomm-linux/qcom-linux-testkit
+        run: |
+          set -euo pipefail
+          TAG=$(yq -r '.inputs.testkit_ref.default' action.yml)
+          if ! grep -qE '^testkit-[0-9]{4}\.[0-9]{2}\.[0-9]{2}$' <<< "${TAG}"; then
+            echo "testkit_ref default ${TAG} is not a testkit release, not tagging"
+            exit 0
+          fi
+          if gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --silent 2>/dev/null; then
+            echo "${TAG} is tagged already"
+            exit 0
+          fi
+          if [ -z "$(git ls-remote --tags "${TESTKIT_REPOSITORY}" "refs/tags/${TAG}")" ]; then
+            echo "::error::${TAG} is not a tag of ${TESTKIT_REPOSITORY}"
+            exit 1
+          fi
+          # through the API, so the checkout keeps no credentials
+          TAG_SHA=$(gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
+            -f tag="${TAG}" \
+            -f object="${GITHUB_SHA}" \
+            -f type=commit \
+            -f message="Test jobs render and their overlays build with qcom-linux-testkit ${TAG}" \
+            --jq .sha)
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${TAG}" \
+            -f sha="${TAG_SHA}" \
+            --silent
