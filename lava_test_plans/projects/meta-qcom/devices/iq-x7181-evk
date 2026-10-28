@@ -1,5 +1,10 @@
 {% extends "devices/hamoa-iot-evk" %}
 
+{# Device-specific values exported to testcase templates #}
+{% set TESTCASE_VARIABLES = {
+    "FASTRPC_DOMAINS": ['adsp', 'cdsp']
+} %}
+
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ['WiFi_Firmware_Driver', 'WiFi_OnOff', 'EFI_Variable_Validation', 'adsp_remoteproc', 'cdsp_remoteproc', 'AudioRecord'] %}
 

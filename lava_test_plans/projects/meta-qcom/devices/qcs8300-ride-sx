@@ -1,5 +1,10 @@
 {% extends "devices/monaco-ride" %}
 
+{# Device-specific values exported to testcase templates #}
+{% set TESTCASE_VARIABLES = {
+    "FASTRPC_DOMAINS": ['adsp', 'cdsp', 'gdsp0']
+} %}
+
 {# Use QDL deployment for this device #}
 {% set deploy_method_template = "qdl.jinja2" %}
 
@@ -10,4 +15,3 @@
 
 {# Exclude unsupported testplan for this device #}
 {% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml', 'pre-merge-audio.yaml'] %}
-

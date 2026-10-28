@@ -1,5 +1,10 @@
 {% extends "devices/qrb2210-rb1" %}
 
+{# Device-specific values exported to testcase templates #}
+{% set TESTCASE_VARIABLES = {
+    "FASTRPC_DOMAINS": ['adsp']
+} %}
+
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ['AudioRecord', 'AudioPlayback', 'EFI_Variable_Validation', 'cdsp_remoteproc', 'DSP_AudioPD'] %}
 
