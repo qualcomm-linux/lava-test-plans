@@ -1,5 +1,10 @@
 {% extends "devices/shikra-iqs-evk" %}
 
+{# Device-specific values exported to testcase templates #}
+{% set TESTCASE_VARIABLES = {
+    "FASTRPC_DOMAINS": ['cdsp']
+} %}
+
 {# Device-specific test exclusions for meta-qcom project #}
 {% set EXCLUDED_TESTS = ['AudioRecord', 'AudioPlayback', 'DSP_AudioPD', 'cdsp_remoteproc', 'adsp_remoteproc', 'WiFi_Firmware_Driver', 'WiFi_OnOff'] %}
 
