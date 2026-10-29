@@ -1,0 +1,116 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{# One suspend to RAM and resume, woken by the lab: Pre_Suspend_Check and  #}
+{# Resume_Check from qcom-linux-testkit record the state before the       #}
+{# suspend and check the cycle after it. The device needs the wake_up and #}
+{# wait_resume commands; devices without them exclude the test plan.      #}
+{# SUSPEND_MODE is written to /sys/power/mem_sleep before the suspend;    #}
+{# "default" keeps the kernel's. A mode the kernel does not list there    #}
+{# fails the job before the suspend. BOOT_OS_PROMPT is the shell prompt.  #}
+{% set test_name = "suspend-resume" %}
+{% set mode = SUSPEND_MODE|default("default") %}
+{% set test_timeout = 20 %}
+{% set user_commands_timeout = user_commands_timeout|default(2) %}
+
+{% macro testkit(name, path, expected) %}
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+{% if testdef_sha %}
+    - from: url
+      name: {{ name }}
+      path: {{ path }}
+      repository: {{ testdef_repo }}/archive/{{ testdef_sha }}.tar.gz
+      strip-components: 1
+{% else %}
+    - from: git
+      name: {{ name }}
+      path: {{ path }}
+      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
+{% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
+      revision: {{ TEST_DEFINITIONS_REVISION }}
+{% endif %}
+{% endif %}
+      parameters:
+        SUSPEND_MODE: {{ mode }}
+      expected:
+      - {{ expected }}
+{% endmacro %}
+
+{% block test_target %}
+{% if mode not in ["default", "s2idle", "shallow", "deep"] %}
+{{ fail("SUSPEND_MODE: unknown mode '" ~ mode ~ "', expected default, s2idle, shallow or deep") }}
+{% endif %}
+{# The device template sets BOOT_OS_PROMPT, so read it here, not above. #}
+{% set shell_prompts = BOOT_OS_PROMPT|default([]) %}
+{% set shell_prompts = [shell_prompts] if shell_prompts is string else shell_prompts %}
+{# The boot accepts this fallback too (include/boot_target/boot_os_prompt.jinja2). #}
+{% set shell_prompts = shell_prompts + ["root@(.*):[/~]#"] %}
+{{ testkit("pre-suspend-check-" ~ mode, "Runner/suites/Kernel/Baseport/Pre_Suspend_Check/Pre_Suspend_Check.yaml", "Pre_Suspend_Check_" ~ mode) }}
+{# The suspend runs in the background, five seconds later, so that the  #}
+{# console stays usable. The kernel's "PM: suspend entry" confirms that #}
+{# the suspend started; the console loglevel is raised for the cycle so #}
+{# that this info message reaches the console. The markers the job      #}
+{# prints once the write to /sys/power/state has returned (after the    #}
+{# resume, or at once if the write failed) need no shell prompt. The    #}
+{# arithmetic keeps the echo of the command from matching them.         #}
+- test:
+    interactive:
+    - name: suspend-{{ mode }}
+      prompts:
+      - 'PM: suspend entry'
+      script:
+      - name: suspend-{{ mode }}-entry
+        command: '(sleep 5; {% if mode != "default" %}grep -qw {{ mode }} /sys/power/mem_sleep || { echo "lava-suspend-unsupported-$((2 + 1)): $(cat /sys/power/mem_sleep)"; exit; }; {% endif %}read level rest < /proc/sys/kernel/printk; echo 7 > /proc/sys/kernel/printk; sync; {% if mode != "default" %}echo {{ mode }} > /sys/power/mem_sleep && {% endif %}echo mem > /sys/power/state; ret=$?; echo $level > /proc/sys/kernel/printk; [ $ret = 0 ] && echo "lava-resumed-$((2 + 1))" || echo "lava-suspend-failed-$((2 + 1))") &'
+        failures:
+{% if mode != "default" %}
+        - message: 'lava-suspend-unsupported-3'
+          exception: TestError
+          error: '{{ mode }} not in /sys/power/mem_sleep'
+{% endif %}
+        - message: 'lava-suspend-failed-3'
+          exception: TestError
+          error: 'echo mem > /sys/power/state failed'
+    timeout:
+      minutes: 1
+{# wait_resume before wake_up lets the board finish suspending; the one #}
+{# after it lets the board resume before the next step.                #}
+- command:
+    name: wait_resume
+    timeout:
+      minutes: {{ user_commands_timeout }}
+- command:
+    name: wake_up
+    timeout:
+      minutes: {{ user_commands_timeout }}
+- command:
+    name: wait_resume
+    timeout:
+      minutes: {{ user_commands_timeout }}
+- test:
+    interactive:
+    - name: resume-{{ mode }}
+      prompts:
+      - 'lava-resumed-3'
+      script:
+      - name: resume-{{ mode }}-returned
+        command:
+        failures:
+        - message: 'lava-suspend-failed-3'
+          exception: TestError
+          error: 'echo mem > /sys/power/state failed'
+{# The test shell waits for the last prompts an interactive step set: #}
+{# hand it the shell prompt again.                                     #}
+    - name: shell-{{ mode }}
+      prompts:
+{% for prompt in shell_prompts %}
+      - {{ prompt|tojson }}
+{% endfor %}
+      script:
+      - name: shell-{{ mode }}-prompt
+        command: ''
+    timeout:
+      minutes: 2
+{{ testkit("resume-check-" ~ mode, "Runner/suites/Kernel/Baseport/Resume_Check/Resume_Check.yaml", "Resume_Check_" ~ mode) }}
+{% endblock test_target %}
