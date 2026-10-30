@@ -6,6 +6,23 @@
 {# Get excluded tests list from device file #}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
 
+{# Build explicit FastRPC testcase variants from the device configuration. Each #}
+{# variant reports its own testcase id so one domain cannot overwrite another. #}
+{% set fastrpc = namespace(variants=[]) %}
+{% for domain in FASTRPC_DOMAINS|default([]) %}
+{% set fastrpc.variants = fastrpc.variants + [
+    {
+        "suffix": domain,
+        "params": {
+            "DOMAIN_NAME": domain,
+            "RES_SUFFIX": domain,
+            "LAVA_TESTCASE_ID": "fastrpc_test_" ~ domain
+        },
+        "expected": ["fastrpc_test_" ~ domain]
+    }
+] %}
+{% endfor %}
+
 {# Define all tests with their details and pre-evaluate conditions #}
 {% set all_tests = [
     {"name": "hotplug", "path": "Runner/suites/Kernel/Baseport/hotplug/hotplug.yaml", "expected": ["hotplug"]},
@@ -27,7 +44,7 @@
     {"name": "Logging_Journalctl_Validation", "path": "Runner/suites/System/Logging/Logging_Journalctl_Validation/Logging_Journalctl_Validation.yaml", "expected": ["Logging_Journalctl_Validation"]},
     {"name": "Partition_PostBoot_Validation", "path": "Runner/suites/Kernel/Baseport/Storage/Partition_PostBoot_Validation/Partition_PostBoot_Validation.yaml", "expected": ["Partition_PostBoot_Validation"]},
     {"name": "Boot_Systemd_KPI_Loop", "path": "Runner/suites/Performance/Boot_Systemd_KPI_Loop/Boot_Systemd_KPI_Loop.yaml", "expected": ["Boot_Systemd_KPI_Loop"]},
-    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "expected": ["fastrpc_test"]},
+    {"name": "fastrpc_test", "path": "Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml", "variants": fastrpc.variants, "expected": ["fastrpc_test"]},
     {"name": "DMA_BUF_Heap_Validation", "path": "Runner/suites/Kernel/Baseport/DMA_BUF_Heap_Validation/DMA_BUF_Heap_Validation.yaml", "expected": ["DMA_BUF_Heap_Validation"]},
     {"name": "RTC_Validation", "path": "Runner/suites/Kernel/Baseport/RTC_Validation/RTC_Validation.yaml", "expected": ["RTC_Validation"]},
     {"name": "TQFTP_Validation", "path": "Runner/suites/Kernel/Baseport/TQFTP_Validation/TQFTP_Validation.yaml", "expected": ["TQFTP_Validation"]},
