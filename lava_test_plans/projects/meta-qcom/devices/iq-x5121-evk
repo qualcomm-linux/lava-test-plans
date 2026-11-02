@@ -1,0 +1,7 @@
+{% extends "devices/purwa-iot-evk" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = [] %}
+
+{# Exclude unsupported testplan for this device #}
+{% set EXCLUDED_TESTPLANS = [] %}
