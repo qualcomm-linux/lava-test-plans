@@ -145,7 +145,7 @@ def _check_lava_validity(container_image, jobs_dir, job_files):
 
     container = None
     try:
-        client = docker.from_env(version="1.38")
+        client = docker.from_env(version="1.40")
         container = client.containers.run(
             image=container_image,
             command=["/usr/share/lava-common/lava-schema.py", "job"]
