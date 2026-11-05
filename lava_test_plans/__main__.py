@@ -24,7 +24,12 @@ from jinja2 import (
     make_logging_undefined,
 )
 from jinja2.ext import loopcontrols
-from jinja2.exceptions import UndefinedError, TemplateSyntaxError, TemplateNotFound
+from jinja2.exceptions import (
+    UndefinedError,
+    TemplateRuntimeError,
+    TemplateSyntaxError,
+    TemplateNotFound,
+)
 from ruamel.yaml import YAML
 from ruamel.yaml.constructor import (
     DuplicateKeyError,
@@ -38,6 +43,7 @@ from ruamel.yaml.composer import ComposerError
 from lava_test_plans import __version__
 from lava_test_plans.utils import (
     compression,
+    fail,
     get_context,
     overlay_action,
     resolve_git_revision,
@@ -481,6 +487,7 @@ def main():
         extensions=["jinja2.ext.loopcontrols"],
     )
     j2_env.globals["compression"] = compression
+    j2_env.globals["fail"] = fail
     context = get_context(script_dirname, args.variables, args.overwrite_variables)
 
     # Auto-generate audio clips URL if AUDIO_CLIPS_BASE_DIR is defined but AUDIO_CLIPS_URL is empty
@@ -604,7 +611,7 @@ def main():
             logger.error("\tline: %s" % e.lineno)
             logger.error("\tissue: %s" % e.message)
             exit_code = 1
-        except UndefinedError as e:
+        except TemplateRuntimeError as e:
             testpath = os.path.join(output_path, args.device_type, test)
             logger.error("Trying to render: %s" % testpath)
             logger.error("\tissue: %s" % e.message)

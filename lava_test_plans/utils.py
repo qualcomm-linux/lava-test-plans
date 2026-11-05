@@ -14,6 +14,7 @@ import re
 import subprocess
 from functools import lru_cache
 from configobj import ConfigObj, ConfigObjError
+from jinja2.exceptions import TemplateRuntimeError
 from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
@@ -195,3 +196,8 @@ def compression(path):
         if path.endswith(ext):
             return ret
     return (None, None)
+
+
+def fail(message):
+    """Stop the rendering of a template that was given a value it cannot use."""
+    raise TemplateRuntimeError(message)
