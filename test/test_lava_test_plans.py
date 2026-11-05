@@ -244,3 +244,58 @@ def test_template_count_with_exclusions(device_name, tmp_path):
         f"{device_name}: Expected {expected_count} (total={total_testplans}, "
         f"excluded={excluded}), got {len(generated_files)}"
     )
+
+
+# DSP domains that fastrpc_test has to cover on each target
+fastrpc_domains_per_device = {
+    "glymur-crd": ["adsp", "cdsp"],
+    "iq-8275-evk": ["adsp", "cdsp", "gdsp0"],
+    "iq-9075-evk": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],
+    "iq-x7181-evk": ["adsp", "cdsp"],
+    "kaanapali-mtp": ["adsp", "cdsp"],
+    "mahua-crd": ["adsp", "cdsp"],
+    "qcs615-ride": ["adsp", "cdsp"],
+    "qcs8300-ride-sx": ["adsp", "cdsp", "gdsp0"],
+    "qcs9100-ride-sx": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],
+    "rb1-core-kit": ["adsp"],
+    "rb3gen2-core-kit": ["adsp", "cdsp"],
+    "shikra-evk": ["cdsp"],
+    "sm8750-mtp": ["adsp", "cdsp"],
+}
+
+
+@pytest.mark.parametrize(
+    "device_name,expected_domains", sorted(fastrpc_domains_per_device.items())
+)
+def test_fastrpc_variants_per_device(device_name, expected_domains, tmp_path):
+    """Render one explicit FastRPC testcase for every expected DSP domain."""
+    temp_output = tmp_path / "test_output"
+
+    sys.argv = shlex.split(
+        f'lava_test_plans --dry-run --variables "variables.ini" '
+        f'--testplan-device-path "lava_test_plans/projects/meta-qcom/devices" '
+        f'--device-type "projects/meta-qcom/devices/{device_name}" '
+        f'--test-case "pre-merge-basic.yaml" '
+        f'--dry-run-path "{temp_output}"'
+    )
+
+    assert main() == 0
+
+    generated_file = (
+        temp_output / f"projects/meta-qcom/devices/{device_name}/pre-merge-basic.yaml"
+    )
+    rendered = generated_file.read_text()
+
+    for domain in expected_domains:
+        assert f"name: fastrpc_test_{domain}" in rendered
+        assert f"DOMAIN_NAME: {domain}" in rendered
+        # The reported result has to be named per domain, otherwise every
+        # variant reports "fastrpc_test" and a consumer keyed on the testcase
+        # name keeps only the one written last.
+        assert f"LAVA_TESTCASE_ID: fastrpc_test_{domain}" in rendered
+        assert f"RES_SUFFIX: {domain}" in rendered
+        assert f"- fastrpc_test_{domain}" in rendered
+
+    assert rendered.count(
+        "path: Runner/suites/Multimedia/CDSP/fastrpc_test/fastrpc_test.yaml"
+    ) == len(expected_domains)

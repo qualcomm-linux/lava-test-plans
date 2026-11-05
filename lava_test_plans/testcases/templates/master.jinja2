@@ -28,8 +28,10 @@
 
 {% block test_target %}
 {% if all_tests is defined %}
+  {# A test is rendered once per variant it declares. A test that declares #}
+  {# no variants renders a single entry, so plain test lists are unchanged. #}
   {% for test in all_tests %}
-  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+  {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) and (test.variants|default([{}])) %}
   {{ super() }}
   {# include the super block once if any tests are included #}
   {% break %}
@@ -39,37 +41,56 @@
     # {{ TEST_DEFINITIONS_REVISION|default("HEAD", true) }} resolved to {{ testdef_sha }}
 {% endif %}
     {% for test in all_tests %}
-    {# Check if test should be included (not excluded AND condition met if specified) #}
-    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
+    {# Skip excluded tests and tests whose include condition is not met #}
+    {% if (test.name in EXCLUDED_TESTS) or (not test.include|default(true)) %}
+    {% continue %}
+    {% endif %}
+    {% for variant in test.variants|default([{}]) %}
+    {# A variant names its entry either directly or through a suffix #}
+    {% if variant.name is defined %}
+    {% set entry_name = variant.name %}
+    {% elif variant.suffix is defined %}
+    {% set entry_name = test.name ~ "_" ~ variant.suffix %}
+    {% else %}
+    {% set entry_name = test.name %}
+    {% endif %}
+    {# Variant parameters are added to the ones the test defines for all #}
+    {# of its entries, and the variant may override what it expects #}
+    {% set base_params = test.params|default({}) %}
+    {% set variant_params = variant.params|default({}) %}
+    {% set entry_expected = variant.expected|default(test.expected|default([])) %}
     {%- if testdef_sha %}
     - from: url
-      name: "{{ test.name }}"
+      name: "{{ entry_name }}"
       path: {{ test.path }}
       repository: {{ testdef_repo }}/archive/{{ testdef_sha }}.tar.gz
       strip-components: 1
     {%- else %}
     - from: git
-      name: "{{ test.name }}"
+      name: "{{ entry_name }}"
       path: {{ test.path }}
       repository: {{ TEST_DEFINITIONS_REPOSITORY }}
       {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
       revision: {{ TEST_DEFINITIONS_REVISION }}
       {% endif %}
     {% endif %}
-      {% if test.params is defined %}
+      {% if base_params or variant_params %}
       params:
-        {% for param_key, param_value in test.params.items() %}
+        {% for param_key, param_value in base_params.items() %}
+        {{ param_key }}: "{{ param_value }}"
+        {% endfor %}
+        {% for param_key, param_value in variant_params.items() %}
         {{ param_key }}: "{{ param_value }}"
         {% endfor %}
       {% endif %}
-      {% if test.expected is defined and test.expected %}
+      {% if entry_expected %}
       expected:
-        {% for expected in test.expected|default([]) %}
+        {% for expected in entry_expected %}
         - {{ expected }}
         {% endfor %}
       {% endif %}
 
-    {% endif %}
+    {% endfor %}
     {% endfor %}
 {% else %}
   {{ super() }}
