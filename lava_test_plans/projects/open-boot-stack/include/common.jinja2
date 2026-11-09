@@ -1,0 +1,40 @@
+{# Values shared by the open-boot-stack test cases: the fingerprints and #}
+{# the boot checks every job runs after each login.                     #}
+{% set td = "automated/linux/" %}
+{% set fw_fp = FIRMWARE_FINGERPRINT|default("") %}
+{% set linux_fp = LINUX_FINGERPRINT|default(fw_fp, true) %}
+{% set stage_fps = STAGE_FINGERPRINTS|default({}) %}
+{# U-Boot publishes its version, with its fingerprint, through SMBIOS. #}
+{% set dmi_fp = stage_fps.get("U-Boot", fw_fp) %}
+
+{% set boot_fingerprint = {"name": "boot-fingerprint", "path": td ~ "boot-fingerprint/boot-fingerprint.yaml",
+    "params": {"FINGERPRINT": fw_fp, "LINUX_FINGERPRINT": linux_fp,
+               "ROOTFS_FINGERPRINT": ROOTFS_FINGERPRINT|default(""),
+               "FIRMWARE_FINGERPRINT": dmi_fp}} %}
+{% set boot_handoff_params = {"BOOT_CPU": OBS_BOOT_CPU|default(""), "CPUS": OBS_CPUS|default(""),
+    "EXCEPTION_LEVEL": OBS_EXCEPTION_LEVEL|default(""), "KVM": OBS_KVM|default(""),
+    "TEE": OBS_TEE|default(""), "PSCI_MODE": OBS_PSCI_MODE|default("")} %}
+{% set kernel_health = {"name": "kernel-health", "path": td ~ "kernel-health/kernel-health.yaml",
+    "params": {"MAX": "0", "IGNORE": ""}} %}
+{# inference: the QAIRT zip and the model bundle where the deploy put  #}
+{# them (projects/open-boot-stack/qdl.jinja2), or the image's bundle.  #}
+{% set qairt_zip = "/lava-ovl/qairt/" ~ QAIRT_URL.split("/")[-1]
+    if QAIRT_URL|default("") and ":qnn" in OBS_INFERENCE_PUS|default("") else "" %}
+{% set model_dir = "/lava-ovl/inference/model" if INFERENCE_MODEL_URL|default("") else INFERENCE_MODEL_DIR|default("") %}
+{% set inference_params = {"PUS": OBS_INFERENCE_PUS|default(""), "ABSENT": OBS_INFERENCE_ABSENT|default(""),
+    "QAIRT_ZIP": qairt_zip, "QAIRT_SHA256": QAIRT_SHA256|default(""),
+    "QAIRT_ROOT": QAIRT_ROOT|default(""), "MODEL_DIR": model_dir} %}
+{% set inference = {"name": "inference", "path": td ~ "inference/inference.yaml", "params": inference_params,
+    "include": (OBS_INFERENCE_PUS|default("") ~ OBS_INFERENCE_ABSENT|default(""))|length > 0} %}
+{% set poweroff %}
+- test:
+    interactive:
+    - name: poweroff
+      prompts:
+      - 'reboot: Power down'
+      script:
+      - name: poweroff
+        command: poweroff
+    timeout:
+      minutes: 3
+{% endset %}

@@ -1,0 +1,35 @@
+{# Checks that every firmware stage banner from firmware_start up to the  #}
+{# kernel start carries the build fingerprint: FIRMWARE_FINGERPRINT, or  #}
+{# the stage's own one in STAGE_FINGERPRINTS. monitor_name names the     #}
+{# result set.                                                            #}
+{# Without a fingerprint every banner would match: expect one that no #}
+{# banner carries, so that the stages are reported missing.           #}
+{% set fw_fp = FIRMWARE_FINGERPRINT|default("", true) or "FIRMWARE_FINGERPRINT-unset" %}
+{% set stage_fps = STAGE_FINGERPRINTS|default({}) %}
+{% set stages = firmware_stages|default(["BL31", "OP-TEE version", "U-Boot"]) %}
+{% set fps = [] %}
+{% set alternatives = [] %}
+{# Longest label first, so that "U-Boot SPL" wins over "U-Boot". #}
+{% for n in range(stages|map("length")|max, 0, -1) %}
+{% for stage in stages if stage|length == n %}
+{% set fp = stage_fps.get(stage, fw_fp) %}
+{% set _ = alternatives.append(stage ~ "(?=[^\\r\\n]*?" ~ fp ~ ")") %}
+{% if fp not in fps %}{% set _ = fps.append(fp) %}{% endif %}
+{% endfor %}
+{% endfor %}
+- test:
+    monitors:
+    - name: {{ monitor_name }}
+      start: {{ firmware_start|default("SBL1, End")|tojson }}
+      end: {{ monitor_end|default("Booting Linux on physical CPU")|tojson }}
+      pattern: {{ ("(?P<test_case_id>" ~ alternatives|join("|") ~ ")[^\\r\\n]*?(?P<result>" ~ fps|sort|join("|") ~ ")")|tojson }}
+      fixupdict:
+{% for fp in fps|sort %}
+        {{ fp|tojson }}: pass
+{% endfor %}
+      expected:
+{% for stage in stages %}
+      - {{ stage|lower|replace(" ", "_")|replace("-", "_") }}
+{% endfor %}
+    timeout:
+      minutes: 4

@@ -1,0 +1,31 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{# Negative controls of the inference test, on the full job's image:   #}
+{# the NSP and DSP remoteprocs stopped, no OpenCL platform for the GPU #}
+{# entries, the expected classes rotated. Every case these touch must  #}
+{# fail; a pass means the test cannot see that failure.                #}
+{# Board facts: projects/open-boot-stack/boards/.                      #}
+{% set test_name = "open-boot-stack-inference-negative" %}
+{% set tests_timeout = 30 %}
+{% set test_timeout = tests_timeout + 3 %}
+{% import "testcases/templates/definitions.jinja2" as defs with context %}
+{% import "projects/open-boot-stack/include/common.jinja2" as c with context %}
+{% set pus = OBS_INFERENCE_PUS|default("") %}
+
+{% set tests = [
+    c.boot_fingerprint,
+    dict(c.inference, name="inference-htp-down", params=dict(c.inference_params, NEGATIVE="htp-down"),
+         include=":qnn-htp:" in pus or ":qnn-dsp:" in pus),
+    dict(c.inference, name="inference-gpu-down", params=dict(c.inference_params, NEGATIVE="gpu-down"),
+         include=":tflite-gpu" in pus),
+    dict(c.inference, name="inference-wrong-class", params=dict(c.inference_params, NEGATIVE="wrong-class")),
+] %}
+
+{% block test_target %}
+- test:
+    timeout:
+      minutes: {{ tests_timeout }}
+    definitions:
+{{ defs.definitions(tests, TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{{ c.poweroff }}
+{% endblock test_target %}

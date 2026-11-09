@@ -1,4 +1,5 @@
 {% extends device_type %}
+{% import "testcases/templates/definitions.jinja2" as defs with context %}
 
 {% set PROJECT_NAME = PROJECT_NAME|default("") %}
 {% set BUILD_NUMBER = BUILD_NUMBER|default("") %}
@@ -7,11 +8,8 @@
 {% set EXTRA_KERNEL_ARGS = EXTRA_KERNEL_ARGS|default() %}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
 
-{# GitHub serves a source tarball per commit, so the definitions can share  #}
-{# one cached fetch instead of a git clone each. The sha is resolved before  #}
-{# rendering; without one, fall back to git.                                 #}
-{% set testdef_repo = TEST_DEFINITIONS_REPOSITORY|default("")|trim|trim("/") %}
-{% set testdef_repo = testdef_repo[:-4] if testdef_repo.endswith(".git") else testdef_repo %}
+{# The sha the definitions are fetched at (definitions.jinja2), resolved #}
+{# before rendering; without one they come from git.                    #}
 {% set testdef_sha = TEST_DEFINITIONS_REVISION_SHA|default("") %}
 
 {# with the BUILD_NUMBER in the middle, it's possible to get #}
@@ -38,39 +36,7 @@
 {% if testdef_sha %}
     # {{ TEST_DEFINITIONS_REVISION|default("HEAD", true) }} resolved to {{ testdef_sha }}
 {% endif %}
-    {% for test in all_tests %}
-    {# Check if test should be included (not excluded AND condition met if specified) #}
-    {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) %}
-    {%- if testdef_sha %}
-    - from: url
-      name: "{{ test.name }}"
-      path: {{ test.path }}
-      repository: {{ testdef_repo }}/archive/{{ testdef_sha }}.tar.gz
-      strip-components: 1
-    {%- else %}
-    - from: git
-      name: "{{ test.name }}"
-      path: {{ test.path }}
-      repository: {{ TEST_DEFINITIONS_REPOSITORY }}
-      {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
-      revision: {{ TEST_DEFINITIONS_REVISION }}
-      {% endif %}
-    {% endif %}
-      {% if test.params is defined %}
-      params:
-        {% for param_key, param_value in test.params.items() %}
-        {{ param_key }}: "{{ param_value }}"
-        {% endfor %}
-      {% endif %}
-      {% if test.expected is defined and test.expected %}
-      expected:
-        {% for expected in test.expected|default([]) %}
-        - {{ expected }}
-        {% endfor %}
-      {% endif %}
-
-    {% endif %}
-    {% endfor %}
+{{ defs.definitions(all_tests, TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
 {% else %}
   {{ super() }}
 {% endif %}

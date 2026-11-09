@@ -1,0 +1,81 @@
+{% extends "testcases/templates/master.jinja2" %}
+
+{# The open boot stack full job: firmware fingerprints on a cold boot,  #}
+{# the Linux checks, then a warm reboot with fingerprints and the boot  #}
+{# checks again. Board facts: projects/open-boot-stack/boards/.         #}
+{% set test_name = "open-boot-stack" %}
+{# The job timeout adds test_timeout to the deploy and boot actions: the #}
+{# main test action, then the reboot, monitor, login and final checks.  #}
+{% set tests_timeout = 75 %}
+{% set test_timeout = tests_timeout + 30 %}
+{% import "testcases/templates/definitions.jinja2" as defs with context %}
+{% import "projects/open-boot-stack/include/common.jinja2" as c with context %}
+{% set td = c.td %}
+
+{# cpu-hotplug runs last: its races flood the kernel log kernel-health #}
+{# reads.                                                              #}
+{% set tests = [
+    c.boot_fingerprint,
+    {"name": "boot-handoff", "path": td ~ "boot-handoff/boot-handoff.yaml", "params": c.boot_handoff_params},
+    {"name": "cpu-features", "path": td ~ "cpu-features/cpu-features.yaml",
+     "params": {"EXPECTED": OBS_CPU_FEATURES_EXPECTED|default(""), "ABSENT": OBS_CPU_FEATURES_ABSENT|default("")}},
+    {"name": "cpufreq-policy", "path": td ~ "cpufreq-policy/cpufreq-policy.yaml",
+     "params": {"STRESS_SECONDS": "60"}},
+    {"name": "remoteproc-smoke", "path": td ~ "remoteproc-smoke/remoteproc-smoke.yaml",
+     "params": {"DEVICE": OBS_REMOTEPROCS|default(""), "WAIT_TIME": "30"}},
+    {"name": "fastrpc", "path": td ~ "fastrpc/fastrpc.yaml",
+     "params": {"TESTS": OBS_FASTRPC_TESTS|default(""), "NODES": OBS_FASTRPC_NODES|default("")}},
+    c.inference,
+    {"name": "alsa-dsp-restart", "path": td ~ "alsa-dsp-restart/alsa-dsp-restart.yaml",
+     "params": OBS_AUDIO|default({}), "include": OBS_AUDIO|default({})|length > 0},
+    {"name": "remoteproc-restart", "path": td ~ "remoteproc-smoke/remoteproc-smoke.yaml",
+     "params": {"DEVICE": OBS_REMOTEPROCS|default(""), "ITERATIONS": "3",
+                "EXPECTED_FAIL": OBS_REMOTEPROC_RESTART_XFAIL|default("")}},
+    {"name": "optee-xtest", "path": td ~ "optee/optee-xtest.yaml",
+     "params": {"TEST_LEVEL": "0", "TEST_SUITE": "regression"}},
+    {"name": "gpu-render", "path": td ~ "smoke/smoke.yaml",
+     "params": {"SKIP_INSTALL": "true", "TESTS": OBS_GPU_TEST_CMD|default("")},
+     "include": OBS_GPU_TEST_CMD|default("")|length > 0},
+    {"name": "video-codec", "path": td ~ "video-codec/video-codec.yaml",
+     "params": OBS_VIDEO|default({}), "include": OBS_VIDEO|default({})|length > 0},
+    {"name": "kvm-unit-tests", "path": td ~ "kvm-unit-tests/kvm-unit-tests.yaml",
+     "params": {"SKIP_INSTALL": "true", "RESULTS": "test", "CPUS": OBS_KVM_CPUS|default(""),
+                "REQUIRE_KVM": "true"}},
+    {"name": "kvm-guest", "path": td ~ "kvm-guest/kvm-guest.yaml",
+     "params": {"VCPUS": "2", "MEMORY": "256", "TIMEOUT": "60"}},
+    c.kernel_health,
+    {"name": "cpu-hotplug", "path": td ~ "cpu-hotplug/cpu-hotplug.yaml",
+     "params": {"ROUNDS": "5", "RACE_SECONDS": "300", "TIMEOUT": "20"}},
+] %}
+{% set after_reboot = [
+    dict(c.boot_fingerprint, name="boot-fingerprint-after-reboot"),
+    {"name": "boot-handoff-after-reboot", "path": td ~ "boot-handoff/boot-handoff.yaml", "params": c.boot_handoff_params},
+    dict(c.kernel_health, name="kernel-health-after-reboot"),
+] %}
+
+{% block test_target %}
+- test:
+    timeout:
+      minutes: {{ tests_timeout }}
+    definitions:
+{{ defs.definitions(tests, TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+- test:
+    interactive:
+    - name: warm-reboot
+      prompts:
+      - 'reboot: Restarting system'
+      script:
+      - name: reboot
+        command: reboot
+    timeout:
+      minutes: 3
+{% set monitor_name = "firmware-fingerprint-warm" %}
+{% include "projects/open-boot-stack/include/firmware-monitor.jinja2" %}
+{% include "projects/open-boot-stack/include/login.jinja2" %}
+- test:
+    timeout:
+      minutes: 10
+    definitions:
+{{ defs.definitions(after_reboot, TEST_DEFINITIONS_REPOSITORY, EXCLUDED_TESTS|default([])) }}
+{{ c.poweroff }}
+{% endblock test_target %}

@@ -1,0 +1,9 @@
+{% extends "devices/lemans-evk" %}
+
+{# The base device flashes the SAIL NOR set (sail_nor/) and then UFS. #}
+{% set qdl_image_dir = "openbootstack-lemans-evk" %}
+
+{# U-Boot SPL loads BL31, OP-TEE and U-Boot. #}
+{% set firmware_stages = ["U-Boot SPL", "BL31", "OP-TEE version", "U-Boot"] %}
+
+{% set EXCLUDED_TESTS = [] %}

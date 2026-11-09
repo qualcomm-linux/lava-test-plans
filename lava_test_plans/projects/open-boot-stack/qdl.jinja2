@@ -1,0 +1,43 @@
+{% extends "include/qdl.jinja2" %}
+
+{# The QAIRT SDK zip is not part of any image (its license does not allow #}
+{# redistributing it on its own): with QAIRT_URL the dispatcher downloads #}
+{# it from Qualcomm for each job, as a file overlay on the rootfs         #}
+{# partition, and so the inference model bundle with INFERENCE_MODEL_URL. #}
+{% set qnn = ":qnn" in OBS_INFERENCE_PUS|default("") %}
+{% set qairt_url = QAIRT_URL|default("") if qnn else "" %}
+{% set model_url = INFERENCE_MODEL_URL|default("") %}
+{% set qdl_overlays = {} %}
+{% if qairt_url %}
+{% set _ = qdl_overlays.update({"qairt": {"url": qairt_url, "format": "file",
+                                          "path": "/qairt/" ~ qairt_url.split("/")[-1]}}) %}
+{% endif %}
+{% if model_url %}
+{% set _ = qdl_overlays.update({"model": {"url": model_url, "format": "tar", "path": "/inference"}}) %}
+{% endif %}
+
+{% block boot_target %}
+{# Power on without waiting for a prompt, so that the monitor sees the #}
+{# firmware banners of the cold boot.                                  #}
+- boot:
+    method: minimal
+    timeout:
+      minutes: 1
+{% set monitor_name = "firmware-fingerprint-cold" %}
+{% include "projects/open-boot-stack/include/firmware-monitor.jinja2" %}
+{% include "projects/open-boot-stack/include/login.jinja2" %}
+{% endblock boot_target %}
+
+{% block metadata %}
+metadata:
+  path: projects/open-boot-stack/
+  firmware-fingerprint: "{{ FIRMWARE_FINGERPRINT|default('') }}"
+  linux-fingerprint: "{{ LINUX_FINGERPRINT|default(FIRMWARE_FINGERPRINT|default('')) }}"
+  build-url: "{{ BUILD_URL|default('') }}"
+  test-definitions: "{{ TEST_DEFINITIONS_REPOSITORY|default('') }}"
+  test-definitions-revision: "{{ TEST_DEFINITIONS_REVISION_SHA|default(TEST_DEFINITIONS_REVISION|default('')) }}"
+{% endblock metadata %}
+
+{% block context %}
+  test_character_delay: 10
+{% endblock context %}

@@ -1,0 +1,16 @@
+{% extends "devices/monaco-arduino-monza" %}
+
+{# The open boot stack qcomflash: the qcs8275-monza eMMC layout (main #}
+{# user area and the OTP area) flashed in one stage.                  #}
+{% set qdl_image_dir = "openbootstack-ventuno-q" %}
+{% set firehose_program = "prog_firehose_ddr.elf" %}
+{% set qdl_stages = [
+    {"storage": "emmc", "path": "",
+     "rawprogram": "rawprogram0.xml rawprogram1.xml",
+     "patch": "patch0.xml patch1.xml"}
+] %}
+
+{# Banners that carry the build fingerprint, in boot order. #}
+{% set firmware_stages = ["BL2", "BL31", "OP-TEE version", "U-Boot"] %}
+
+{% set EXCLUDED_TESTS = [] %}

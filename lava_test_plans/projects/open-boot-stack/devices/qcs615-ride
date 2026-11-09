@@ -1,0 +1,16 @@
+{% extends "devices/qcs615-ride" %}
+
+{% set qdl_image_dir = "openbootstack-qcs615-ride" %}
+{# LUN 3 (CDT, DDR training data) is never written on these boards. #}
+{% set qdl_stages = [
+    {"storage": "ufs", "path": "",
+     "rawprogram": "rawprogram0.xml rawprogram1.xml rawprogram2.xml rawprogram4.xml rawprogram5.xml",
+     "patch": "patch0.xml patch1.xml patch2.xml patch4.xml patch5.xml"}
+] %}
+
+{# Banners that carry the build fingerprint, in boot order. #}
+{% set firmware_stages = ["BL2", "BL31", "OP-TEE version", "U-Boot"] %}
+
+{# No audio userspace, no FastRPC test libraries for the Hexagon v66 and #}
+{# no video codec in this stack yet.                                     #}
+{% set EXCLUDED_TESTS = ["alsa-dsp-restart", "fastrpc", "video-codec"] %}
