@@ -74,8 +74,11 @@ jobs:
     needs: testkit
     if: ${{ needs.testkit.outputs.tag != '' }}
     permissions:
-      # render-jobs.yml asks for contents: write in its tag job, which only
-      # runs on a push to the default branch, not when called from here
+      # render-jobs.yml asks for contents: write in its tag job, and for
+      # actions: read when it calls submit-jobs.yml after it; both only run on
+      # a push to the default branch, not when called from here, but a called
+      # workflow can not be granted less than its jobs ask for
+      actions: read
       contents: write
     uses: $/.github/workflows/render-jobs.yml
     with:

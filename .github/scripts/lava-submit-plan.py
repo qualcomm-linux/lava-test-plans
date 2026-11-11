@@ -9,7 +9,8 @@ For every build in .github/lava-submit.yml, find the latest scheduled run of
 the workflow that made it and print, for each of its test plans, the inputs
 of one lava-test-plans action call: the build URL the images are downloaded
 from and the variables the jobs are rendered with. The machines and the test
-plans are taken from the configuration as they are.
+plans are taken from the configuration as they are. Every entry names the
+group, the build, its results are summarised with.
 
 meta-qcom
     The latest run that published build URLs for the distro. The action
@@ -155,6 +156,7 @@ def plan_meta_qcom(config, common):
             entries.append(
                 {
                     "name": f"{project}-{testplan}",
+                    "group": f"{project}-{distro}",
                     "project": project,
                     "testplan": testplan,
                     "machines": ",".join(machines),
@@ -231,6 +233,7 @@ def plan_qcom_deb_images(config, common):
                 entries.append(
                     {
                         "name": f"{project}-{kernel}-{artifact_prefix}-{testplan}",
+                        "group": f"{project}-{kernel}-{artifact_prefix}",
                         "project": project,
                         "testplan": testplan,
                         "machines": ",".join(machines),
@@ -296,7 +299,10 @@ def main():
             sys.exit(f"{project}: {error.url}: {error}")
 
     for entry in entries:
-        entry["name"] = re.sub(r"[^A-Za-z0-9._-]+", "-", entry["name"])
+        # the results of a group, a build, are summarised together; "_" ends
+        # the group in the file names, so it can not be part of one
+        for key in ("name", "group"):
+            entry[key] = re.sub(r"[^A-Za-z0-9.-]+", "-", entry[key])
     json.dump({"include": entries}, sys.stdout)
     print()
 

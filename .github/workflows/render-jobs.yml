@@ -201,6 +201,7 @@ jobs:
     needs: tag
     if: ${{ needs.tag.outputs.tag != '' }}
     permissions:
+      actions: read # submit-jobs.yml summarising the results
       contents: read # actions/checkout, actions/download-artifact
     uses: $/.github/workflows/submit-jobs.yml
     secrets:
