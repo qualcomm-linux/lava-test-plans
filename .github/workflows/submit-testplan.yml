@@ -21,6 +21,12 @@ on:
         description: Name of the entry, used for the artifact and result files
         type: string
         required: true
+      group:
+        description: >
+          Build the test plan belongs to; the results of a group are
+          summarised together by submit-jobs.yml
+        type: string
+        required: true
       project:
         type: string
         required: true
@@ -138,4 +144,5 @@ jobs:
           save_result_as_artifact: true
           save_job_details: true
           result_file_name: ${{ matrix.target.result_file }}
-          test_job_file_name_prefix: ${{ inputs.name }}-
+          # submit-jobs.yml finds the job details of a group by this name
+          test_job_file_name_prefix: ${{ inputs.group }}_
