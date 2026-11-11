@@ -29,6 +29,9 @@ on:
     workflows: [Render test jobs]
     types: [completed]
     branches: [master]
+  # TEMPORARY: run from the branch before the workflow is on master
+  push:
+    branches: [lava-submit]
   workflow_dispatch:
     inputs:
       testkit_ref:
@@ -65,6 +68,7 @@ jobs:
     # such a run, and only once every test plan rendered
     if: >-
       ${{ github.event_name == 'workflow_dispatch'
+      || github.event_name == 'push'
       || (github.event.workflow_run.conclusion == 'success'
       && github.event.workflow_run.event == 'push') }}
     runs-on: ubuntu-latest
