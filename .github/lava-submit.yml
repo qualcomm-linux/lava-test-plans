@@ -1,0 +1,107 @@
+# Test jobs submit-jobs.yml renders and submits to LAVA once a new
+# qcom-linux-testkit release tag is added to this repository.
+#
+# Every project lists the builds to test and, per build, the test plans and
+# the machines to run each of them on. .github/scripts/lava-submit-plan.py
+# finds the latest run that made each build and works out the URL and the
+# variables the lava-test-plans action is called with; the action renders the
+# jobs.
+#
+# The machine lists follow the CI of each project: the test-distro.yml calls
+# in .github/workflows/test.yml of meta-qcom and .github/lava-boards.yml of
+# qcom-deb-images. A machine has to have a device in
+# lava_test_plans/projects/<project>/devices/.
+
+meta-qcom:
+  repository: qualcomm-linux/meta-qcom
+  branch: master
+  # the latest scheduled run that published build URLs for the distro
+  workflow: nightly-build.yml
+  # where compile.yml uploads the images of a run attempt
+  artifacts_url: https://qli-prod-artifacts.qualcomm.com/qcom-prd-gh-artifacts/qualcomm-linux/meta-qcom/{run_id}-{run_attempt}/
+  os_info: qcom-distro
+  # what the lava-test-plans action of meta-qcom sets on top of the defaults
+  variables: |
+    AUTH_HEADER_NAME=QLIAuthorization
+    AUTH_HEADER_TOKEN=Q_QLI_S3_TOKEN
+    AUDIO_CLIPS_BASE_DIR=/home/AudioClips/
+    DOCKER_IMAGE_POSTPROCESS=ghcr.io/foundriesio/lava-lmp-sign:main
+  builds:
+    - distro: nodistro
+      testplans:
+        nodistro/boot: [iq-8275-evk, iq-9075-evk, iq-x7181-evk, qcs615-ride, rb3gen2-core-kit, qcs8300-ride-sx, qcs9100-ride-sx, dragonboard-410c, dragonboard-820c, rb1-core-kit]
+    - distro: qcom-distro
+      testplans:
+        qcom-distro/boot: &qcom-distro-boot [glymur-crd, iq-8275-evk, iq-9075-evk, iq-x7181-evk, kaanapali-mtp, mahua-crd, qcs615-ride, rb3gen2-core-kit, qcs8300-ride-sx, qcs9100-ride-sx, rb1-core-kit, shikra-evk, sm8750-mtp]
+        qcom-distro/connectivity: &qcom-distro-premerge [glymur-crd, iq-8275-evk, iq-9075-evk, iq-x7181-evk, kaanapali-mtp, qcs615-ride, rb3gen2-core-kit, qcs8300-ride-sx, qcs9100-ride-sx, rb1-core-kit, shikra-evk, sm8750-mtp]
+        qcom-distro/kernel: *qcom-distro-premerge
+        qcom-distro/multimedia: *qcom-distro-premerge
+        qcom-distro/performance: *qcom-distro-premerge
+        qcom-distro/pre-merge: *qcom-distro-premerge
+        qcom-distro/system: *qcom-distro-premerge
+        qcom-distro/virtualization: *qcom-distro-premerge
+
+qcom-deb-images:
+  repository: qualcomm-linux/qcom-deb-images
+  branch: main
+  # where debos.yml uploads the images of a run attempt
+  artifacts_url: https://qli-prod-artifacts.qualcomm.com/qcom-prd-gh-artifacts/qualcomm-linux/qcom-deb-images/{run_id}-{run_attempt}/
+  os_info: debian
+  variables: |
+    AUTH_HEADER_NAME=QLIAuthorization
+    AUTH_HEADER_TOKEN=Q_QLI_S3_TOKEN
+  # The nightly workflow that builds and tests each kernel flavour, with the
+  # suites and the image variant it tests; the latest scheduled run in which
+  # the images of every suite were uploaded is used. The boot machines are the
+  # boot list of the flavour in lava-boards.yml, the pre-merge ones its
+  # premerge list, or the boot list when that is empty.
+  builds:
+    - kernel: qcom-next
+      workflow: build.yml
+      suites: [trixie, forky]
+      variant: console
+      testplans:
+        debian/boot: &qcom-next [glymur-crd, qcs615-ride, qcs6490-rb3gen2, qcs8300-ride, qrb2210-rb1]
+        debian/pre-merge: *qcom-next
+    - kernel: debian
+      workflow: build-debian.yml
+      suites: [trixie, forky]
+      variant: console
+      testplans:
+        debian/boot: &debian [lemans-evk, qcs615-ride, qcs6490-rb3gen2]
+        debian/pre-merge: *debian
+    - kernel: arduino
+      workflow: linux-arduino.yml
+      suites: [trixie, forky]
+      variant: console
+      testplans:
+        debian/boot: [monaco-arduino-monza, monaco-evk, qrb2210-arduino-imola]
+        debian/pre-merge: [monaco-arduino-monza, monaco-evk]
+    - kernel: linux-next
+      workflow: linux-next.yml
+      suites: [trixie, forky]
+      variant: console
+      testplans:
+        debian/boot: &linux-next [glymur-crd, monaco-arduino-monza, monaco-evk, qcs6490-rb3gen2, qrb2210-arduino-imola, qrb2210-rb1, shikra-iqs-evk]
+        debian/pre-merge: *linux-next
+    - kernel: mainline
+      workflow: linux-mainline.yml
+      suites: [trixie, forky]
+      variant: console
+      testplans:
+        debian/boot: &mainline [glymur-crd, monaco-arduino-monza, qcs6490-rb3gen2, qrb2210-arduino-imola]
+        debian/pre-merge: *mainline
+    - kernel: qcom-7.3
+      workflow: linux-qcom-7.3.yml
+      suites: [trixie]
+      variant: xfce
+      testplans:
+        debian/boot: &qcom-7_3 [glymur-crd]
+        debian/pre-merge: *qcom-7_3
+    - kernel: qcom-laptops
+      workflow: linux-qcom-laptops.yml
+      suites: [forky]
+      variant: gnome
+      testplans:
+        debian/boot: &qcom-laptops [glymur-crd]
+        debian/pre-merge: *qcom-laptops

@@ -1,0 +1,168 @@
+name: Submit test jobs
+
+# Render the test plans against real builds with a qcom-linux-testkit release
+# and submit the jobs to LAVA:
+#
+# - meta-qcom: the latest nightly build of master
+# - qcom-deb-images: for every kernel flavour, the latest nightly build of the
+#   workflow that builds it
+#
+# The builds, their test plans and the machines to run them on are listed in
+# .github/lava-submit.yml. .github/scripts/lava-submit-plan.py finds the run
+# of every build and works out the build URL and the variables to render with;
+# submit-testplan.yml is called once per project, test plan and build to
+# render the jobs with the lava-test-plans action and submit each with
+# foundriesio/lava-action.
+#
+# render-jobs.yml calls it once it has tagged the default branch with a new
+# testkit release; it can also be started by hand. Every LAVA job is waited
+# for, and a failed test or an incomplete job fails its GitHub job, so that a
+# testkit release that breaks a test is caught before projects move to it. The
+# results are kept as JUnit artifacts of the run.
+#
+# Needs the LAVATOKEN secret, a token of a LAVA user allowed to submit jobs.
+
+on:
+  workflow_call:
+    inputs:
+      testkit_ref:
+        description: >
+          Revision of qcom-linux-testkit to render with. Defaults to the
+          testkit_ref default of action.yml.
+        type: string
+        required: false
+        default: ""
+      ref:
+        description: >
+          Revision of lava-test-plans to render with. Defaults to the commit
+          the workflow runs for.
+        type: string
+        required: false
+        default: ""
+      projects:
+        description: >
+          Comma separated projects to submit jobs for. Empty means every
+          project in .github/lava-submit.yml.
+        type: string
+        required: false
+        default: ""
+      submit:
+        description: Submit the rendered jobs to LAVA; when false, only render them
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      LAVATOKEN:
+        description: Token of a LAVA user allowed to submit jobs
+        required: false
+  workflow_dispatch:
+    inputs:
+      testkit_ref:
+        description: >
+          Revision of qcom-linux-testkit to render with. Defaults to the
+          testkit_ref default of action.yml.
+        type: string
+        required: false
+        default: ""
+      projects:
+        description: >
+          Comma separated projects to submit jobs for. Empty means every
+          project in .github/lava-submit.yml.
+        type: string
+        required: false
+        default: ""
+      submit:
+        description: Submit the rendered jobs to LAVA; when off, only render them
+        type: boolean
+        required: false
+        default: true
+
+# grant nothing by default; every job below declares the scopes it needs
+permissions: {}
+
+jobs:
+  release:
+    name: Select testkit release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # gh api reading action.yml
+    outputs:
+      testkit_ref: ${{ steps.release.outputs.testkit_ref }}
+      ref: ${{ steps.release.outputs.ref }}
+    steps:
+      - name: Select testkit release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUTS_TESTKIT_REF: ${{ inputs.testkit_ref }}
+          REF: ${{ inputs.ref || github.sha }}
+        run: |
+          set -euo pipefail
+          TAG="${INPUTS_TESTKIT_REF}"
+          if [ -z "${TAG}" ]; then
+            TAG=$(gh api "repos/${GITHUB_REPOSITORY}/contents/action.yml?ref=${REF}" --jq .content \
+              | base64 -d | yq -r '.inputs.testkit_ref.default')
+          fi
+          echo "Submitting test jobs of lava-test-plans ${REF} with qcom-linux-testkit ${TAG}"
+          echo "testkit_ref=${TAG}" >> "${GITHUB_OUTPUT}"
+          echo "ref=${REF}" >> "${GITHUB_OUTPUT}"
+
+  plan:
+    name: Find builds
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.ref }}
+          persist-credentials: false
+
+      - name: Find builds
+        id: plan
+        env:
+          # the builds are in other public repositories, read through the API
+          GH_TOKEN: ${{ github.token }}
+          TESTKIT_REF: ${{ needs.release.outputs.testkit_ref }}
+          REF: ${{ needs.release.outputs.ref }}
+          PROJECTS: ${{ inputs.projects }}
+        run: |
+          set -euo pipefail
+          pip install pyyaml
+          MATRIX=$(python3 .github/scripts/lava-submit-plan.py \
+            --testkit-ref "${TESTKIT_REF}" \
+            --lava-test-plans-ref "${REF}" \
+            --projects "${PROJECTS}")
+          echo "${MATRIX}" | jq .
+          if [ "$(echo "${MATRIX}" | jq '.include | length')" -eq 0 ]; then
+            echo "::error::found no build to submit test jobs for"
+            exit 1
+          fi
+          echo "matrix=${MATRIX}" >> "${GITHUB_OUTPUT}"
+
+  submit:
+    name: ${{ matrix.name }}
+    needs: [release, plan]
+    permissions:
+      contents: read # actions/checkout, actions/download-artifact
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    uses: $/.github/workflows/submit-testplan.yml
+    secrets:
+      LAVATOKEN: ${{ secrets.LAVATOKEN }}
+    with:
+      ref: ${{ needs.release.outputs.ref }}
+      testkit_ref: ${{ needs.release.outputs.testkit_ref }}
+      name: ${{ matrix.name }}
+      project: ${{ matrix.project }}
+      testplan: ${{ matrix.testplan }}
+      machines: ${{ matrix.machines }}
+      distro_name: ${{ matrix.distro_name }}
+      build_url: ${{ matrix.build_url }}
+      os_info: ${{ matrix.os_info }}
+      variables: ${{ matrix.variables }}
+      submit: ${{ inputs.submit }}

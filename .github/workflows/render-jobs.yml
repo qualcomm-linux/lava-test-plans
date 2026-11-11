@@ -9,7 +9,9 @@ name: Render test jobs
 # update-testkit.yml calls it with a new qcom-linux-testkit tag in testkit_ref
 # before it proposes that tag as the testkit_ref default of the action. On a
 # push to the default branch, once every test plan passed, the commit is tagged
-# with the testkit_ref default when this repository does not have that tag yet.
+# with the testkit_ref default when this repository does not have that tag yet,
+# and submit-jobs.yml renders the test plans against real builds with that tag
+# and submits the jobs to LAVA.
 
 on:
   push:
@@ -151,12 +153,15 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # gh api creating the tag
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - name: Tag with the testkit_ref default
+        id: tag
         env:
           GH_TOKEN: ${{ github.token }}
           TESTKIT_REPOSITORY: https://github.com/qualcomm-linux/qcom-linux-testkit
@@ -186,3 +191,20 @@ jobs:
             -f ref="refs/tags/${TAG}" \
             -f sha="${TAG_SHA}" \
             --silent
+          # set only when the tag was added by this run, so that a re-run of
+          # a tagged commit submits nothing again
+          echo "tag=${TAG}" >> "${GITHUB_OUTPUT}"
+
+  submit:
+    name: Submit test jobs
+    # only when the tag job above added a new testkit tag
+    needs: tag
+    if: ${{ needs.tag.outputs.tag != '' }}
+    permissions:
+      contents: read # actions/checkout, actions/download-artifact
+    uses: $/.github/workflows/submit-jobs.yml
+    secrets:
+      LAVATOKEN: ${{ secrets.LAVATOKEN }}
+    with:
+      testkit_ref: ${{ needs.tag.outputs.tag }}
+      ref: ${{ github.sha }}
