@@ -1,0 +1,148 @@
+name: Submit test plan
+
+# Render one test plan of one project for one build with the action and submit
+# every rendered job to LAVA with foundriesio/lava-action, one matrix job per
+# LAVA job, which waits for it and fails when it fails. Called by submit-jobs.yml once per entry of its plan; it is a
+# workflow of its own because the jobs of one call form a matrix, which can not
+# be nested in the matrix of the calls.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Revision of lava-test-plans to render with
+        type: string
+        required: true
+      testkit_ref:
+        description: Revision of qcom-linux-testkit to render with
+        type: string
+        required: true
+      name:
+        description: Name of the entry, used for the artifact and result files
+        type: string
+        required: true
+      group:
+        description: >
+          Build the test plan belongs to; the results of a group are
+          summarised together by submit-jobs.yml
+        type: string
+        required: true
+      project:
+        type: string
+        required: true
+      testplan:
+        type: string
+        required: true
+      machines:
+        type: string
+        required: true
+      distro_name:
+        type: string
+        required: false
+        default: ""
+      build_url:
+        type: string
+        required: false
+        default: ""
+      os_info:
+        type: string
+        required: false
+        default: ""
+      variables:
+        type: string
+        required: false
+        default: ""
+      submit:
+        description: Submit the rendered jobs; when false, only render them
+        type: boolean
+        required: false
+        default: true
+      lava_url:
+        type: string
+        required: false
+        default: lava.infra.foundries.io
+    secrets:
+      LAVATOKEN:
+        description: Token of a LAVA user allowed to submit jobs
+        required: false
+
+# grant nothing by default; every job below declares the scopes it needs. these
+# are also capped by the calling job's permissions: block
+permissions: {}
+
+jobs:
+  render:
+    name: Render
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # the action installing lava-test-plans
+    outputs:
+      jobmatrix: ${{ steps.render.outputs.jobmatrix }}
+      artifact_id: ${{ steps.render.outputs.artifact_id }}
+    steps:
+      - name: Render test jobs
+        id: render
+        # a machine that fails to render must not hold back the jobs of the
+        # others; the job is failed at the end instead
+        continue-on-error: true
+        uses: $/
+        with:
+          # render with the tagged revision, which may be older than the
+          # default branch the calling workflow runs from
+          ref: ${{ inputs.ref }}
+          repository: ${{ github.repository }}
+          testkit_ref: ${{ inputs.testkit_ref }}
+          machines: ${{ inputs.machines }}
+          project: ${{ inputs.project }}
+          testplan: ${{ inputs.testplan }}
+          distro_name: ${{ inputs.distro_name }}
+          build_url: ${{ inputs.build_url }}
+          os_info: ${{ inputs.os_info }}
+          variables: ${{ inputs.variables }}
+          prefix: testjobs-${{ inputs.name }}
+
+      - name: Check rendering
+        if: ${{ steps.render.outcome == 'failure' }}
+        run: |
+          echo "::error::rendering failed for some machines, see the Render test jobs step"
+          exit 1
+
+  submit:
+    name: ${{ matrix.target.name }} ${{ matrix.target.path }}
+    needs: render
+    # the artifact is only uploaded when some job rendered; run for those even
+    # when others failed to
+    if: >-
+      ${{ !cancelled() && inputs.submit && needs.render.outputs.artifact_id != '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/download-artifact
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.render.outputs.jobmatrix) }}
+    steps:
+      - name: Download test jobs
+        uses: actions/download-artifact@v7
+        with:
+          artifact-ids: ${{ needs.render.outputs.artifact_id }}
+
+      - name: Submit ${{ matrix.target.path }}
+        # wait for the LAVA job and fail on a failed test or an incomplete
+        # job, so that a testkit release breaking a test shows here. The
+        # timeout starts at submission and covers the time spent in the LAVA
+        # queue too, which is long with every test plan submitted at once;
+        # hosted runners stop a job after 6 hours anyway
+        timeout-minutes: 340
+        uses: foundriesio/lava-action@2392ee48130c6d99c97bb91cddb46d1fcde43f3e # v14
+        with:
+          lava_token: ${{ secrets.LAVATOKEN }}
+          lava_url: ${{ inputs.lava_url }}
+          job_definition: ${{ matrix.target.path }}
+          wait_for_job: true
+          fail_action_on_failure: true
+          fail_action_on_incomplete: true
+          save_result_as_artifact: true
+          save_job_details: true
+          result_file_name: ${{ matrix.target.result_file }}
+          # submit-jobs.yml finds the job details of a group by this name
+          test_job_file_name_prefix: ${{ inputs.group }}_
