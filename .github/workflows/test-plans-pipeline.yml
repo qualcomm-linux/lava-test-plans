@@ -2,17 +2,24 @@ name: Run tests
 
 on: [push, pull_request]
 
+# grant nothing by default; every job below declares the scopes it needs
+permissions: {}
+
 env:
   TEST_LAVA_VALIDITY_CONTAINER: ghcr.io/linux-validation/lava/lava-server-amd64:2026.05-qualcomm-2026.05-20-01117a204
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
     strategy:
       matrix:
         python-version: ['3.12']
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
