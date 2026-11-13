@@ -1,0 +1,1 @@
+{% extends "devices/hamoa-iot-evk" %}
