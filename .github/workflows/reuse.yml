@@ -2,11 +2,18 @@ name: REUSE Compliance Check
 
 on: [push, pull_request]
 
+# grant nothing by default; every job below declares the scopes it needs
+permissions: {}
+
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read # actions/checkout
     steps:
     - uses: actions/checkout@master
+      with:
+        persist-credentials: false
     - name: pull docker image
       run: docker pull fsfe/reuse
     - name: REUSE Compliance Check
