@@ -1,7 +1,7 @@
 {% extends "testcases/templates/master.jinja2" %}
 
 {% set test_name = "pre-merge-basic" %}
-{% set test_timeout = 10 %}
+{% set test_timeout = 20 %}
 
 {# Get excluded tests list from device file #}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}

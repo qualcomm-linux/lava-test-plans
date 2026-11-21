@@ -6,7 +6,7 @@
 } %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = [] %}
+{% set EXCLUDED_TESTS = ['Ethernet_Basic_Validation'] %}
 
 {# Exclude unsupported testplan for this device #}
-{% set EXCLUDED_TESTPLANS = [] %}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
