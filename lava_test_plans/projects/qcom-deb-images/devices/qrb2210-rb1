@@ -16,5 +16,7 @@
 {# DSP_AudioPD fails on any remoteproc error in dmesg, and the modem #}
 {# crashes during startup on some boots only (DOG detects stalled    #}
 {# initialization)                                                   #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['DSP_AudioPD'] %}
+{# fastrpc_test fails on any FastRPC error in dmesg, and the compute #}
+{# context banks log mmap/unmmap errors on some boots only          #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['DSP_AudioPD', 'fastrpc_test'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}

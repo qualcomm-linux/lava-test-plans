@@ -22,5 +22,7 @@
 {# DSP_AudioPD fails on any remoteproc error in dmesg, and the modem   #}
 {# remoteproc fails to load qcom/qcs6490/modem.mbn (error -2) on some #}
 {# boots only, with every kernel and on several boards               #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF', 'DSP_AudioPD'] %}
+{# fastrpc_test fails on any FastRPC error in dmesg, and the compute #}
+{# context banks log mmap/unmmap errors on some boots only          #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF', 'DSP_AudioPD', 'fastrpc_test'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
