@@ -19,5 +19,8 @@
 {% import "projects/qcom-deb-images/include/excluded-tests.jinja2" as excluded %}
 {# hotplug passes or fails by chance (qcom-deb-images #692) #}
 {# BT_ON_OFF passes or fails by chance (qcom-deb-images #735) #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF'] %}
+{# DSP_AudioPD fails on any remoteproc error in dmesg, and the modem   #}
+{# remoteproc fails to load qcom/qcs6490/modem.mbn (error -2) on some #}
+{# boots only, with every kernel and on several boards               #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF', 'DSP_AudioPD'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
