@@ -259,7 +259,7 @@ fastrpc_domains_per_device = {
         "qcs8300-ride-sx": ["adsp", "cdsp", "gdsp0"],
         "qcs9100-ride-sx": ["adsp", "cdsp", "gdsp0", "gdsp1"],
         "rb1-core-kit": ["adsp"],
-        "rb3gen2-core-kit": ["adsp", "cdsp"],
+        "rb3gen2-core-kit": ["adsp"],
         "shikra-evk": ["cdsp"],
         "sm8750-mtp": ["adsp", "cdsp"],
     },
