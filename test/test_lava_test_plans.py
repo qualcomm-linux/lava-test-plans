@@ -257,7 +257,7 @@ fastrpc_domains_per_device = {
         "mahua-crd": ["adsp", "cdsp"],
         "qcs615-ride": ["adsp", "cdsp"],
         "qcs8300-ride-sx": ["adsp", "cdsp", "gdsp0"],
-        "qcs9100-ride-sx": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],
+        "qcs9100-ride-sx": ["adsp", "cdsp", "gdsp0", "gdsp1"],
         "rb1-core-kit": ["adsp"],
         "rb3gen2-core-kit": ["adsp", "cdsp"],
         "shikra-evk": ["cdsp"],
