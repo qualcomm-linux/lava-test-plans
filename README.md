@@ -44,6 +44,8 @@ Lines starting with *#* are omited. Variables can also be set using
  * *KERNEL_BRANCH*: used in test job name
  * *OS_INFO*: used in test job name
  * *LAVA_JOB_PRIORITY*: priority of the LAVA job, used by LAVA scheduler
+ * *LAVA_QUEUE_TIMEOUT*: hours a job may wait for a device before LAVA cancels it
+ * *LAVA_QUEUE_TIMEOUT_MINUTES*: the same in minutes, used instead of *LAVA_QUEUE_TIMEOUT* when both are set
  * *LAVA_JOB_VISIBILITY*: defaults to *public*. This block can be used to restrict job visibility to user or group.
  * *LAVA_JOB_VISIBILITY_GROUPS*: variable should contain groups required by job. Formtatting is important and this variable should be
  formatted comma separated list. Example: group1, group2. In case of using just one group, end string with comma. Example:

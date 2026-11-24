@@ -43,7 +43,10 @@ timeouts:
   actions:
     finalize:
       seconds: 60
-{% if LAVA_QUEUE_TIMEOUT is defined %}
+{% if LAVA_QUEUE_TIMEOUT_MINUTES is defined %}
+  queue:
+    minutes: {{ LAVA_QUEUE_TIMEOUT_MINUTES }}
+{% elif LAVA_QUEUE_TIMEOUT is defined %}
   queue:
     hours: {{ LAVA_QUEUE_TIMEOUT }}
 {% endif %}
