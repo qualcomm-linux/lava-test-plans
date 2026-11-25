@@ -264,7 +264,6 @@ fastrpc_domains_per_device = {
         "sm8750-mtp": ["adsp", "cdsp"],
     },
     "qcom-deb-images": {
-        "glymur-crd": ["adsp", "cdsp"],
         "hamoa-iot-evk": ["adsp", "cdsp"],
         "kaanapali-mtp": ["adsp", "cdsp"],
         "lemans-evk": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],

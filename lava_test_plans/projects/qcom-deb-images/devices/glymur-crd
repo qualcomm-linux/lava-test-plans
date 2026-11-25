@@ -14,5 +14,7 @@
 {# https://github.com/qualcomm-linux/qcom-deb-images/issues/647 #}
 {% import "projects/qcom-deb-images/include/excluded-tests.jinja2" as excluded %}
 {# Boot_Systemd_KPI_Loop fails (qcom-deb-images #737) #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['Boot_Systemd_KPI_Loop'] %}
+{# fastrpc_test can panic the kernel, which loses every test after #}
+{# it, and otherwise fails on some boots only                      #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['Boot_Systemd_KPI_Loop', 'fastrpc_test'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
