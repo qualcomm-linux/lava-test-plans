@@ -251,7 +251,7 @@ fastrpc_domains_per_device = {
     "meta-qcom": {
         "glymur-crd": ["adsp", "cdsp"],
         "iq-8275-evk": ["adsp", "cdsp", "gdsp0"],
-        "iq-9075-evk": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],
+        "iq-9075-evk": ["adsp", "cdsp", "gdsp0", "gdsp1"],
         "iq-x7181-evk": ["cdsp"],
         "kaanapali-mtp": ["adsp", "cdsp"],
         "mahua-crd": ["adsp", "cdsp"],
