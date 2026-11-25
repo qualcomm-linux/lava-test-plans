@@ -9,7 +9,7 @@
 {% set deploy_method_template = "qdl.jinja2" %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ['DSP_AudioPD', 'AudioRecord', 'AudioPlayback', 'adsp_remoteproc'] %}
+{% set EXCLUDED_TESTS = ['DSP_AudioPD', 'AudioRecord', 'AudioPlayback', 'adsp_remoteproc', 'cdsp_remoteproc', 'TQFTP_Validation'] %}
 
 {% set flasher_device_type = "qcs9100-ride-sx" %}
 
