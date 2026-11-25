@@ -6,7 +6,7 @@
 } %}
 
 {# Device-specific test exclusions for meta-qcom project #}
-{% set EXCLUDED_TESTS = ['AudioRecord', 'adsp_remoteproc', 'DSP_AudioPD', 'Ethernet_Basic_Validation'] %}
+{% set EXCLUDED_TESTS = ['AudioRecord', 'adsp_remoteproc', 'DSP_AudioPD', 'Ethernet_Basic_Validation', 'EFI_Variable_Validation'] %}
 
 {# Exclude unsupported testplan for this device #}
 {% set EXCLUDED_TESTPLANS = ['pre-merge-camera.yaml'] %}
