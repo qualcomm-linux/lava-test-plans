@@ -24,5 +24,9 @@
 {# boots only, with every kernel and on several boards               #}
 {# fastrpc_test fails on any FastRPC error in dmesg, and the compute #}
 {# context banks log mmap/unmmap errors on some boots only          #}
-{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF', 'DSP_AudioPD', 'fastrpc_test'] %}
+{# cdsp_remoteproc fails when the CDSP does not come up:               #}
+{# qcom_q6v5_pas a300000.remoteproc: start timed out / can't start     #}
+{# rproc cdsp: -110, on some boots only, on every rb3gen2 board and    #}
+{# with every kernel                                                    #}
+{% set EXCLUDED_TESTS = excluded.EXCLUDED_TESTS + ['hotplug', 'BT_ON_OFF', 'DSP_AudioPD', 'fastrpc_test', 'cdsp_remoteproc'] %}
 {% set EXCLUDED_TESTPLANS = excluded.EXCLUDED_TESTPLANS %}
