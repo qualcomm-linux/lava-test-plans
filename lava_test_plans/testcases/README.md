@@ -48,6 +48,34 @@ small subset across several areas so that a pull request gets a fast answer.
 qcom-linux-testkit ships a `run.sh` but no LAVA test definition for them, so
 there is nothing for `path:` to point at.
 
+## Suspend and resume
+
+`suspend-resume.yaml` suspends the board to RAM once and has the lab wake it;
+one cycle per job, so a board that crashes in a cycle loses only that job.
+`SUSPEND_MODE` selects the mode (default `default`, the kernel's
+`/sys/power/mem_sleep` setting; also `s2idle`, `shallow` or `deep`); other
+values fail the job generation. `Pre_Suspend_Check` and `Resume_Check` from
+qcom-linux-testkit (`TEST_DEFINITIONS_REPOSITORY`) run before and after the
+cycle: they tell a resume from a reboot and check the suspend statistics and
+the kernel log of the cycle.
+
+The suspend is started in the background, with the console loglevel raised
+so that the kernel's `PM: suspend entry` reaches the console; it works on
+any image with a POSIX shell whose kernel console is the connection LAVA
+reads. A suspend that does not start within a minute fails the
+`suspend-<mode>-entry` case with a timeout; a mode missing from
+`/sys/power/mem_sleep`, like a write to `/sys/power/state` that fails, ends
+the job with a `TestError`. After the entry, `wait_resume` gives the board
+time to finish suspending, `wake_up` wakes it and `wait_resume` gives it
+time to resume. The job then waits for the marker the background job
+prints after the resume, and for the shell prompt the boot accepts
+(`BOOT_OS_PROMPT` or `root@(.*):[/~]#`), before `Resume_Check`.
+
+The device dictionary must provide both user commands: `wake_up`, which
+wakes the board (a power button press or an equivalent lab signal), and
+`wait_resume`, a delay. Devices without them exclude the test plan with
+`EXCLUDED_TESTPLANS`.
+
 ## Tests that need lab setup
 
 Some entries carry an `include` condition and only end up in the job when the
