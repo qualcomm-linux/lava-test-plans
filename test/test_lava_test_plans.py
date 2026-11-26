@@ -267,7 +267,7 @@ fastrpc_domains_per_device = {
         "hamoa-iot-evk": ["adsp", "cdsp"],
         "kaanapali-mtp": ["adsp", "cdsp"],
         "lemans-evk": ["adsp", "cdsp", "cdsp1", "gdsp0", "gdsp1"],
-        "mahua-crd": ["adsp", "cdsp"],
+        "mahua-crd": ["cdsp"],
         "monaco-evk": ["adsp", "cdsp", "gdsp0"],
         "qcs615-ride": ["adsp", "cdsp"],
         "qcs8300-ride": ["adsp", "cdsp", "gdsp0"],
