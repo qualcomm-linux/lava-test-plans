@@ -6,6 +6,10 @@
 {% set OS_INFO = OS_INFO|default("") %}
 {% set EXTRA_KERNEL_ARGS = EXTRA_KERNEL_ARGS|default() %}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+{# How the test helpers send their signals: "stdout" (LAVA's default) or #}
+{# "kmsg", through /dev/kmsg so that kernel messages printed on the same  #}
+{# serial line cannot land inside a signal. Needs a root test shell.     #}
+{% set LAVA_SIGNAL = LAVA_SIGNAL|default("") %}
 
 {# GitHub serves a source tarball per commit, so the definitions can share  #}
 {# one cached fetch instead of a git clone each. The sha is resolved before  #}
@@ -74,6 +78,9 @@
         {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
       revision: {{ TEST_DEFINITIONS_REVISION }}
         {% endif %}
+      {% endif %}
+      {% if LAVA_SIGNAL %}
+      lava-signal: {{ LAVA_SIGNAL }}
       {% endif %}
       {% if base_params or variant_params %}
       params:
