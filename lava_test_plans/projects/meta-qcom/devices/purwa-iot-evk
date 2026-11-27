@@ -1,0 +1,7 @@
+{% extends "devices/purwa-iot-evk" %}
+
+{# Device-specific test exclusions for meta-qcom project #}
+{% set EXCLUDED_TESTS = ['RTC_Validation'] %}
+
+{# Exclude unsupported testplan for this device #}
+{% set EXCLUDED_TESTPLANS = ['pre-merge-bt.yaml', 'pre-merge-camera.yaml', 'pre-merge-display-gfx.yaml', 'pre-merge-audio.yaml'] %}
