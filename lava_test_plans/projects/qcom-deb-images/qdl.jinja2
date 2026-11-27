@@ -35,6 +35,24 @@
 {# /dev/kmsg instead, which the test shell can write to as root.         #}
 {% set LAVA_SIGNAL = LAVA_SIGNAL|default("kmsg", true) %}
 
+{# Kernel messages on the serial console can swallow the login commands   #}
+{# LAVA types. AUTOLOGIN_OVERLAY_URL points at a serial-getty drop-in that #}
+{# logs root in on the console of the image under test (see               #}
+{# files/serial-getty-autologin.conf); when it is set, LAVA writes it into #}
+{# the rootfs and waits for the root prompt instead of logging in.        #}
+{% set AUTOLOGIN_OVERLAY_URL = AUTOLOGIN_OVERLAY_URL|default("") %}
+{% if AUTOLOGIN_OVERLAY_URL %}
+{% set qdl_overlays = {
+    "autologin": {
+        "url": AUTOLOGIN_OVERLAY_URL,
+        "format": "file",
+        "path": "/etc/systemd/system/serial-getty@.service.d/autologin.conf"
+    }
+} %}
+{% set auto_login = false %}
+{% set AUTO_LOGIN_NEW_PASSWORD = "" %}
+{% endif %}
+
 {% block metadata %}
 metadata:
   path: projects/qcom-deb-images/
