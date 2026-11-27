@@ -30,6 +30,11 @@
 {% set AUTO_LOGIN_SU_COMMAND = AUTO_LOGIN_SU_COMMAND|default("sudo su") %}
 {% set BOOT_OS_PROMPT = ["root@debian", "debian@debian"] %}
 
+{# The images print their kernel messages on the serial line LAVA reads, #}
+{# and those can split a test signal in two; send the signals through    #}
+{# /dev/kmsg instead, which the test shell can write to as root.         #}
+{% set LAVA_SIGNAL = LAVA_SIGNAL|default("kmsg", true) %}
+
 {% block metadata %}
 metadata:
   path: projects/qcom-deb-images/
