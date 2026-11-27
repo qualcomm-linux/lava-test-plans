@@ -57,6 +57,7 @@ meta_qcom_testplans = [
     "meta-qcom/qcom-distro/performance",
     "meta-qcom/qcom-distro/system",
     "meta-qcom/qcom-distro/virtualization",
+    "meta-qcom/qcom-distro/suspend",
 ]
 assert len(meta_qcom_testplans) > 0
 meta_qcom_variable_input_file = "projects/meta-qcom/variables.yaml"
@@ -92,6 +93,7 @@ assert len(qcom_deb_images_devices) > 0
 qcom_deb_images_testplans = [
     "qcom-deb-images/debian/boot",
     "qcom-deb-images/debian/pre-merge",
+    "qcom-deb-images/debian/suspend",
 ]
 assert len(qcom_deb_images_testplans) > 0
 qcom_deb_images_variable_input_file = "projects/qcom-deb-images/variables.yaml"
@@ -167,6 +169,7 @@ assert len(meta_qcom_arduino_devices) > 0
 meta_qcom_arduino_testplans = [
     "meta-qcom-arduino/nodistro/boot",
     "meta-qcom-arduino/qcom-distro/boot",
+    "meta-qcom-arduino/qcom-distro/suspend",
 ]
 assert len(meta_qcom_arduino_testplans) > 0
 meta_qcom_arduino_variable_input_file = "projects/meta-qcom-arduino/variables.yaml"
