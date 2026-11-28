@@ -16,9 +16,6 @@
 {# BUILD_DOWNLOAD_URL ends with a "/" #}
 {% set ROOTFS_URL = ROOTFS_URL|default(BUILD_DOWNLOAD_URL + image_file_name) %}
 
-{# bring the network up once the board is flashed, before the OS boots #}
-{% set user_pre_boot_commands = user_pre_boot_commands|default(["network_turn_on"]) %}
-
 {# The image ships with an expired password, so the first login is followed #}
 {# by a forced password change; auto_login_commands.jinja2 answers it. The  #}
 {# debian user reaches root through sudo, the root account having no        #}
