@@ -6,6 +6,10 @@
 {% set OS_INFO = OS_INFO|default("") %}
 {% set EXTRA_KERNEL_ARGS = EXTRA_KERNEL_ARGS|default() %}
 {% set EXCLUDED_TESTS = EXCLUDED_TESTS|default([]) %}
+{# How the test helpers send their signals: "stdout" (LAVA's default) or #}
+{# "kmsg", through /dev/kmsg so that kernel messages printed on the same  #}
+{# serial line cannot land inside a signal. Needs a root test shell.     #}
+{% set LAVA_SIGNAL = LAVA_SIGNAL|default("") %}
 
 {# GitHub serves a source tarball per commit, so the definitions can share  #}
 {# one cached fetch instead of a git clone each. The sha is resolved before  #}
@@ -34,6 +38,33 @@
   {% for test in all_tests %}
     {% if (test.name not in EXCLUDED_TESTS) and (test.include|default(true)) and (test.variants|default([{}], true)) %}
   {{ super() }}
+      {% if LAVA_SIGNAL == "kmsg" %}
+      {# Signals sent through /dev/kmsg stay in the kernel log, so a test    #}
+      {# that prints the kernel log replays every earlier signal on the     #}
+      {# console, and LAVA acts on them again: a replayed STARTRUN reopens   #}
+      {# a finished run. Wrap dmesg and journalctl in /usr/local/bin so that #}
+      {# their output leaves out the signals; their exit status is kept.    #}
+      {# Its own signals go through /dev/kmsg as well: a stdout signal can  #}
+      {# be cut by the kmsg STARTRUN of the next test.                      #}
+    - from: inline
+      name: hide-lava-signals
+      path: inline/hide-lava-signals.yaml
+      lava-signal: kmsg
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: hide-lava-signals
+          description: "Leave the LAVA signals out of dmesg and journalctl"
+        run:
+          steps:
+            - |
+              for tool in dmesg journalctl; do
+                real=$(command -v "$tool") || continue
+                [ "$real" = "/usr/local/bin/$tool" ] && continue
+                printf '%s\n' '#!/bin/bash' "\"$real\" \"\$@\" | grep --line-buffered -v 'LAVA_SIGNAL'" 'exit "${PIPESTATUS[0]}"' > "/usr/local/bin/$tool"
+                chmod 755 "/usr/local/bin/$tool"
+              done
+      {% endif %}
       {# include the super block once if any tests are included #}
       {% break %}
     {% endif %}
@@ -74,6 +105,9 @@
         {% if TEST_DEFINITIONS_REVISION is defined and TEST_DEFINITIONS_REVISION %}
       revision: {{ TEST_DEFINITIONS_REVISION }}
         {% endif %}
+      {% endif %}
+      {% if LAVA_SIGNAL %}
+      lava-signal: {{ LAVA_SIGNAL }}
       {% endif %}
       {% if base_params or variant_params %}
       params:

@@ -16,9 +16,6 @@
 {# BUILD_DOWNLOAD_URL ends with a "/" #}
 {% set ROOTFS_URL = ROOTFS_URL|default(BUILD_DOWNLOAD_URL + image_file_name) %}
 
-{# bring the network up once the board is flashed, before the OS boots #}
-{% set user_pre_boot_commands = user_pre_boot_commands|default(["network_turn_on"]) %}
-
 {# The image ships with an expired password, so the first login is followed #}
 {# by a forced password change; auto_login_commands.jinja2 answers it. The  #}
 {# debian user reaches root through sudo, the root account having no        #}
@@ -29,6 +26,29 @@
 {% set AUTO_LOGIN_NEW_PASSWORD = AUTO_LOGIN_NEW_PASSWORD|default("new password") %}
 {% set AUTO_LOGIN_SU_COMMAND = AUTO_LOGIN_SU_COMMAND|default("sudo su") %}
 {% set BOOT_OS_PROMPT = ["root@debian", "debian@debian"] %}
+
+{# The images print their kernel messages on the serial line LAVA reads, #}
+{# and those can split a test signal in two; send the signals through    #}
+{# /dev/kmsg instead, which the test shell can write to as root.         #}
+{% set LAVA_SIGNAL = LAVA_SIGNAL|default("kmsg", true) %}
+
+{# Kernel messages on the serial console can swallow the login commands   #}
+{# LAVA types. AUTOLOGIN_OVERLAY_URL points at a serial-getty drop-in that #}
+{# logs root in on the console of the image under test (see               #}
+{# files/serial-getty-autologin.conf); when it is set, LAVA writes it into #}
+{# the rootfs and waits for the root prompt instead of logging in.        #}
+{% set AUTOLOGIN_OVERLAY_URL = AUTOLOGIN_OVERLAY_URL|default("") %}
+{% if AUTOLOGIN_OVERLAY_URL %}
+{% set qdl_overlays = {
+    "autologin": {
+        "url": AUTOLOGIN_OVERLAY_URL,
+        "format": "file",
+        "path": "/etc/systemd/system/serial-getty@.service.d/autologin.conf"
+    }
+} %}
+{% set auto_login = false %}
+{% set AUTO_LOGIN_NEW_PASSWORD = "" %}
+{% endif %}
 
 {% block metadata %}
 metadata:

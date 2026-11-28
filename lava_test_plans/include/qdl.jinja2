@@ -12,6 +12,13 @@
 {% set qdl_image_dir = qdl_image_dir|default(IMAGE_FILE_NAME|replace(".rootfs.qcomflash.tar.gz", "")) %}
 {% set qdl_rootfs_image = qdl_rootfs_image|default(qdl_image_dir + "/rootfs.img") %}
 {% set apply_overlay = apply_overlay|default(true) %}
+{# Extra overlays for the rootfs image, as {name: {"url": ..., "format": #}
+{# "file" or "tar", "path": ...}}. They need LAVA's overlays: syntax, which #}
+{# takes the image format and replaces apply-overlay, so leaving this      #}
+{# empty keeps the apply-overlay deployment.                               #}
+{% set qdl_overlays = qdl_overlays|default({}) %}
+{% set qdl_rootfs_format = qdl_rootfs_format|default("ext4") %}
+{% set qdl_overlay_backend = qdl_overlay_backend|default("") %}
 
 {# firehose_program / rawprogram / patch are device specific and are expected #}
 {# to be set in the device file. Defaults are provided as a fallback only.     #}
@@ -51,7 +58,22 @@
         {{ AUTH_HEADER_NAME }}: {{ AUTH_HEADER_TOKEN }}
 {% endif %}
       url: '{{ ROOTFS_URL }}'
+{% if qdl_overlays %}
+      format: {{ qdl_rootfs_format }}
+{% if qdl_overlay_backend %}
+      overlay_backend: {{ qdl_overlay_backend }}
+{% endif %}
+      overlays:
+        lava: {{ apply_overlay | lower }}
+{% for name, overlay in qdl_overlays.items() %}
+        {{ name }}:
+          url: '{{ overlay.url }}'
+          format: {{ overlay.format }}
+          path: '{{ overlay.path }}'
+{% endfor %}
+{% else %}
       apply-overlay: {{ apply_overlay | lower }}
+{% endif %}
     timeout:
       minutes: {{ qdl_deploy_timeout }}
     to: qdl
