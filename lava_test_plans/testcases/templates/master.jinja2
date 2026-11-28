@@ -44,9 +44,12 @@
       {# console, and LAVA acts on them again: a replayed STARTRUN reopens   #}
       {# a finished run. Wrap dmesg and journalctl in /usr/local/bin so that #}
       {# their output leaves out the signals; their exit status is kept.    #}
+      {# Its own signals go through /dev/kmsg as well: a stdout signal can  #}
+      {# be cut by the kmsg STARTRUN of the next test.                      #}
     - from: inline
       name: hide-lava-signals
       path: inline/hide-lava-signals.yaml
+      lava-signal: kmsg
       repository:
         metadata:
           format: Lava-Test Test Definition 1.0
